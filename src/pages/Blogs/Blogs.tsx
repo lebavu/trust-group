@@ -8,24 +8,16 @@ const BlogTable = () => {
   const queryClient = useQueryClient();
 
   // Lấy danh sách blog
-  const { isLoading, data: blogs } = useQuery("blogs", () =>
-    axios.get("/api/blogs").then((res) => res.data)
-  );
+  const { isLoading, data: blogs } = useQuery("blogs", () => axios.get("/api/blogs").then((res) => res.data));
 
   // Thêm mới blog
-  const addBlogMutation = useMutation((newBlog) =>
-    axios.post("/api/blogs", newBlog)
-  );
+  const addBlogMutation = useMutation((newBlog) => axios.post("/api/blogs", newBlog));
 
   // Cập nhật blog
-  const updateBlogMutation = useMutation((updatedBlog) =>
-    axios.put(`/api/blogs/${updatedBlog.id}`, updatedBlog)
-  );
+  const updateBlogMutation = useMutation((updatedBlog) => axios.put(`/api/blogs/${updatedBlog.id}`, updatedBlog));
 
   // Xoá blog
-  const deleteBlogMutation = useMutation((blogId) =>
-    axios.delete(`/api/blogs/${blogId}`)
-  );
+  const deleteBlogMutation = useMutation((blogId) => axios.delete(`/api/blogs/${blogId}`));
 
   // Hiển thị pop-up thêm mới/cập nhật
   const openPopup = (blog = null) => {
@@ -86,13 +78,7 @@ const BlogTable = () => {
           ))}
         </tbody>
       </table>
-      {isPopupOpen && (
-        <BlogForm
-          blog={currentBlog}
-          onSubmit={handleFormSubmit}
-          onClose={closePopup}
-        />
-      )}
+      {isPopupOpen && <BlogForm blog={currentBlog} onSubmit={handleFormSubmit} onClose={closePopup} />}
     </div>
   );
 };

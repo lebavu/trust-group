@@ -31,21 +31,13 @@ export default function FullWidthGrid() {
         <Grid item xs={12} md={8}>
           <Item>
             <Stack spacing={2} direction={{ xs: "column", sm: "row" }}>
-              <Card
-                sx={{ minHeight: "165px", minWidth: "49%", maxWidth: 345 }}
-                className={cx("card", "gradient")}
-              >
+              <Card sx={{ minHeight: "165px", minWidth: "49%", maxWidth: 345 }} className={cx("card", "gradient")}>
                 <CardContent>
                   <AssessmentIcon sx={{ marginBottom: 2, color: "#fff" }} />
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    color="white"
-                    component="div"
-                  >
+                  <Typography gutterBottom variant='h5' color='white' component='div'>
                     $500
                   </Typography>
-                  <Typography variant="body2" color="white">
+                  <Typography variant='body2' color='white'>
                     Total Earning
                   </Typography>
                 </CardContent>
@@ -56,15 +48,10 @@ export default function FullWidthGrid() {
               >
                 <CardContent>
                   <AssessmentIcon sx={{ marginBottom: 2, color: "#fff" }} />
-                  <Typography
-                    gutterBottom
-                    variant="h5"
-                    color="white"
-                    component="div"
-                  >
+                  <Typography gutterBottom variant='h5' color='white' component='div'>
                     $500
                   </Typography>
-                  <Typography variant="body2" color="white">
+                  <Typography variant='body2' color='white'>
                     Total Earning
                   </Typography>
                 </CardContent>
@@ -77,41 +64,28 @@ export default function FullWidthGrid() {
             <Stack spacing={2}>
               <Card sx={{ width: "100%" }} className={cx("card", "gradient")}>
                 <CardContent sx={{ padding: "10px!important" }}>
-                  <Stack spacing={2} direction="row" alignItems="center">
+                  <Stack spacing={2} direction='row' alignItems='center'>
                     <AssessmentIcon sx={{ color: "#fff" }} />
                     <div>
-                      <Typography
-                        gutterBottom
-                        variant="h5"
-                        color="white"
-                        component="div"
-                      >
+                      <Typography gutterBottom variant='h5' color='white' component='div'>
                         $500
                       </Typography>
-                      <Typography variant="body2" color="white">
+                      <Typography variant='body2' color='white'>
                         Total Earning
                       </Typography>
                     </div>
                   </Stack>
                 </CardContent>
               </Card>
-              <Card
-                sx={{ width: "100%" }}
-                className={cx("card", "gradient-light")}
-              >
+              <Card sx={{ width: "100%" }} className={cx("card", "gradient-light")}>
                 <CardContent sx={{ padding: "10px!important" }}>
-                  <Stack spacing={2} direction="row" alignItems="center">
+                  <Stack spacing={2} direction='row' alignItems='center'>
                     <AssessmentIcon sx={{ color: "#fff" }} />
                     <div>
-                      <Typography
-                        gutterBottom
-                        variant="h5"
-                        color="white"
-                        component="div"
-                      >
+                      <Typography gutterBottom variant='h5' color='white' component='div'>
                         $500
                       </Typography>
-                      <Typography variant="body2" color="white">
+                      <Typography variant='body2' color='white'>
                         Total Earning
                       </Typography>
                     </div>
@@ -123,47 +97,33 @@ export default function FullWidthGrid() {
         </Grid>
         <Grid item xs={12} md={4}>
           <Item>
-            <Typography marginBottom={3} variant="h3" component="div">
+            <Typography marginBottom={3} variant='h3' component='div'>
               Popular Products
             </Typography>
             <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1a-content"
-                id="panel1a-header"
-              >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel1a-content' id='panel1a-header'>
                 <Typography>Accordion 1</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet
+                  blandit leo lobortis eget.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             <Accordion>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel2a-content"
-                id="panel2a-header"
-              >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel2a-content' id='panel2a-header'>
                 <Typography>Accordion 2</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Suspendisse malesuada lacus ex, sit amet blandit leo lobortis
-                  eget.
+                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet
+                  blandit leo lobortis eget.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             <Accordion disabled>
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel3a-content"
-                id="panel3a-header"
-              >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='panel3a-content' id='panel3a-header'>
                 <Typography>Disabled Accordion</Typography>
               </AccordionSummary>
             </Accordion>

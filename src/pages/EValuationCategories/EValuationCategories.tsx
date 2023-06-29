@@ -42,9 +42,7 @@ const EValuationComponent = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8888/trustGroup/public/api/e-valuation-categories"
-      );
+      const response = await axios.get("http://localhost:8888/trustGroup/public/api/e-valuation-categories");
       setCategories(response.data.data);
     } catch (error) {
       toast.error("Failed to fetch categories.");
@@ -53,14 +51,11 @@ const EValuationComponent = () => {
 
   const createCategory = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:8888/trustGroup/public/api/e-valuation-categories",
-        {
-          name: newCategory.name,
-          desc: newCategory.desc,
-          parent: newCategory.parent,
-        }
-      );
+      const response = await axios.post("http://localhost:8888/trustGroup/public/api/e-valuation-categories", {
+        name: newCategory.name,
+        desc: newCategory.desc,
+        parent: newCategory.parent,
+      });
       await fetchCategories();
       toast.success("Category created successfully.");
       setNewCategory({
@@ -82,7 +77,7 @@ const EValuationComponent = () => {
           name: newCategory.name,
           desc: newCategory.desc,
           parent: newCategory.parent,
-        }
+        },
       );
       await fetchCategories();
       toast.success("Category updated successfully.");
@@ -95,12 +90,8 @@ const EValuationComponent = () => {
 
   const deleteCategory = async (category) => {
     try {
-      await axios.delete(
-        `http://localhost:8888/trustGroup/public/api/e-valuation-categories/${category.data.id}`
-      );
-      const updatedCategories = categories.filter(
-        (p) => p.data.id !== category.data.id
-      );
+      await axios.delete(`http://localhost:8888/trustGroup/public/api/e-valuation-categories/${category.data.id}`);
+      const updatedCategories = categories.filter((p) => p.data.id !== category.data.id);
       setCategories(updatedCategories);
       toast.success("Category deleted successfully.");
       setDeleteConfirmationOpen(false);
@@ -127,19 +118,12 @@ const EValuationComponent = () => {
 
   const indexOfLastCategory = currentPage * categoriesPerPage;
   const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
-  const currentCategories = categories.slice(
-    indexOfFirstCategory,
-    indexOfLastCategory
-  );
+  const currentCategories = categories.slice(indexOfFirstCategory, indexOfLastCategory);
 
   const filteredCategories = currentCategories.filter((category) => {
     if (category.data && category.data.name) {
-      const nameMatch = category.data.name
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
-      const descMatch = category.data.desc
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
+      const nameMatch = category.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const descMatch = category.data.desc.toLowerCase().includes(searchKeyword.toLowerCase());
       return nameMatch || descMatch;
     }
     return false;
@@ -178,15 +162,9 @@ const EValuationComponent = () => {
 
   return (
     <div>
-      <div className="mb-10 flex items-center justify-between gap-3">
-        <TextField
-          label="Search"
-          size="small"
-          value={searchKeyword}
-          onChange={handleSearchChange}
-          variant="outlined"
-        />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+      <div className='mb-10 flex items-center justify-between gap-3'>
+        <TextField label='Search' size='small' value={searchKeyword} onChange={handleSearchChange} variant='outlined' />
+        <Button variant='contained' color='primary' onClick={openFormPopup}>
           Create Category
         </Button>
       </div>
@@ -197,7 +175,7 @@ const EValuationComponent = () => {
               <TableCell>Name</TableCell>
               <TableCell>Description</TableCell>
               <TableCell>Parent</TableCell>
-              <TableCell align="right">Action</TableCell>
+              <TableCell align='right'>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -207,19 +185,11 @@ const EValuationComponent = () => {
                 <TableCell>{category.data.desc}</TableCell>
                 <TableCell>{category.data.parent}</TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap items-center justify-end gap-5">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => openEditFormPopup(category)}
-                    >
+                  <div className='flex flex-wrap items-center justify-end gap-5'>
+                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(category)}>
                       Edit
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => openDeleteConfirmation(category)}
-                    >
+                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(category)}>
                       Delete
                     </Button>
                   </div>
@@ -229,51 +199,45 @@ const EValuationComponent = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Box mt={2} display="flex" justifyContent="center">
+      <Box mt={2} display='flex' justifyContent='center'>
         <Pagination
           count={totalPages}
           page={currentPage}
           onChange={handlePageChange}
-          color="primary"
+          color='primary'
           showFirstButton
           showLastButton
         />
       </Box>
-      <Dialog
-        open={open}
-        onClose={closeFormPopup}
-        PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}
-      >
-        <DialogTitle>
-          {selectedCategory ? "Edit Category" : "Create New Category"}
-        </DialogTitle>
+      <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
+        <DialogTitle>{selectedCategory ? "Edit Category" : "Create New Category"}</DialogTitle>
         <DialogContent>
           <TextField
-            name="name"
-            label="Name"
+            name='name'
+            label='Name'
             value={newCategory.name}
             onChange={handleInputChange}
-            variant="outlined"
+            variant='outlined'
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            name="desc"
-            label="Description"
+            name='desc'
+            label='Description'
             value={newCategory.desc}
             onChange={handleInputChange}
-            variant="outlined"
+            variant='outlined'
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            name="parent"
-            label="Parent"
+            name='parent'
+            label='Parent'
             value={newCategory.parent || ""}
             onChange={handleInputChange}
-            variant="outlined"
+            variant='outlined'
             fullWidth
-            margin="normal"
+            margin='normal'
           />
         </DialogContent>
         <DialogActions>
@@ -290,21 +254,16 @@ const EValuationComponent = () => {
       >
         <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this category?
-          </DialogContentText>
+          <DialogContentText>Are you sure you want to delete this category?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => deleteCategory(categoryToDelete)}
-            color="error"
-          >
+          <Button onClick={() => deleteCategory(categoryToDelete)} color='error'>
             Delete
           </Button>
           <Button onClick={closeDeleteConfirmation}>Cancel</Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
+      <ToastContainer position='top-right' autoClose={3000} hideProgressBar />
     </div>
   );
 };

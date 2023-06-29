@@ -1,2 +1,2 @@
-import NonMenu from './NonMenu'
-export default NonMenu
+import NonMenu from "./NonMenu";
+export default NonMenu;

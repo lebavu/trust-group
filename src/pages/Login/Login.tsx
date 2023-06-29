@@ -40,42 +40,36 @@ const LoginForm: React.FC<FormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Typography variant="h2" align="center" gutterBottom>
+    <Container maxWidth='xs'>
+      <Typography variant='h2' align='center' gutterBottom>
         LOGIN
       </Typography>
       <form onSubmit={handleSubmit}>
         <TextField
-          label="Email"
-          variant="outlined"
-          type="email"
-          name="email"
+          label='Email'
+          variant='outlined'
+          type='email'
+          name='email'
           value={formData.email}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
         <TextField
-          label="Password"
-          variant="outlined"
-          type="password"
-          name="password"
+          label='Password'
+          variant='outlined'
+          type='password'
+          name='password'
           value={formData.password}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
-        <Button
-          type="submit"
-          sx={{ marginTop: "2rem" }}
-          variant="contained"
-          color="primary"
-          fullWidth
-        >
+        <Button type='submit' sx={{ marginTop: "2rem" }} variant='contained' color='primary' fullWidth>
           Sign In
         </Button>
       </form>

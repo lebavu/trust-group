@@ -1,8 +1,5 @@
 import config from "@/config";
 
-// Layouts
-import { NonMenu } from "@/layouts";
-
 // Pages
 import Home from "@/pages/Home";
 import Blogs from "@/pages/Blogs";
@@ -22,7 +19,7 @@ import SignUp from "@/pages/SignUp";
 import MyAccount from "@/pages/MyAccount";
 
 // Public routes
-const publicRoutes = [
+const publicRoutes: { path: string; component: React.ComponentType<any> }[] = [
   { path: config.routes.Home, component: Home },
   { path: config.routes.Blogs, component: Blogs },
   { path: config.routes.Branches, component: Branches },
@@ -39,9 +36,8 @@ const publicRoutes = [
   { path: config.routes.Login, component: Login },
   { path: config.routes.SignUp, component: SignUp },
   { path: config.routes.MyAccount, component: MyAccount },
-  // { path: config.routes.upload, component: Upload, layout: HeaderOnly },
 ];
 
-const privateRoutes = [];
+const privateRoutes: { path: string; component: React.ComponentType<any> }[] = [];
 
 export { publicRoutes, privateRoutes };

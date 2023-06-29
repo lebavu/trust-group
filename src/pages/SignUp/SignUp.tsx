@@ -49,79 +49,72 @@ const SignUpForm: React.FC<FormProps> = ({ onSubmit }) => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Typography variant="h2" align="center" gutterBottom>
+    <Container maxWidth='xs'>
+      <Typography variant='h2' align='center' gutterBottom>
         SIGN UP
       </Typography>
       <form onSubmit={handleSubmit}>
         <TextField
-          label="Name"
-          variant="outlined"
-          type="text"
-          name="name"
+          label='Name'
+          variant='outlined'
+          type='text'
+          name='name'
           value={formData.name}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
         <TextField
-          label="Email"
-          variant="outlined"
-          type="email"
-          name="email"
+          label='Email'
+          variant='outlined'
+          type='email'
+          name='email'
           value={formData.email}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
         <TextField
-          label="Role ID"
-          variant="outlined"
-          type="text"
-          name="roleId"
+          label='Role ID'
+          variant='outlined'
+          type='text'
+          name='roleId'
           value={formData.roleId}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
         <TextField
-          label="Handphone Number"
-          variant="outlined"
-          type="text"
-          name="handphoneNumber"
+          label='Handphone Number'
+          variant='outlined'
+          type='text'
+          name='handphoneNumber'
           value={formData.handphoneNumber}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
         <TextField
-          label="Password"
-          variant="outlined"
-          type="password"
-          name="password"
+          label='Password'
+          variant='outlined'
+          type='password'
+          name='password'
           value={formData.password}
           onChange={handleChange}
           required
-          size="small"
+          size='small'
           fullWidth
-          margin="normal"
+          margin='normal'
         />
-        <Button
-          type="submit"
-          size="large"
-          variant="contained"
-          color="primary"
-          fullWidth
-          sx={{ marginTop: "2rem" }}
-        >
+        <Button type='submit' size='large' variant='contained' color='primary' fullWidth sx={{ marginTop: "2rem" }}>
           Sign Up
         </Button>
       </form>

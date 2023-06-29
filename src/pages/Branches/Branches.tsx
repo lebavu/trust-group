@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import {
   Button,
   TextField,
-  Modal,
   Box,
   Table,
   TableContainer,
@@ -21,20 +21,32 @@ import {
   Pagination,
 } from "@mui/material";
 
-const BranchComponent = () => {
-  const [branches, setBranches] = useState([]);
-  const [newBranch, setNewBranch] = useState({
-    name: "",
-    address: "",
-    image: null,
+interface Branch {
+  data: {
+    id: string;
+    name: string;
+    address: string;
+    image_url: string;
+  };
+}
+
+const BranchComponent: React.FC = () => {
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [newBranch, setNewBranch] = useState<Branch>({
+    data: {
+      id: "",
+      name: "",
+      address: "",
+      image_url: "",
+    },
   });
-  const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [branchesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [branchToDelete, setBranchToDelete] = useState(null);
+  const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
 
   useEffect(() => {
     fetchBranches();
@@ -42,9 +54,7 @@ const BranchComponent = () => {
 
   const fetchBranches = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:8888/trustGroup/public/api/branches"
-      );
+      const response = await axios.get("http://localhost:8888/trustGroup/public/api/branches");
       setBranches(response.data.data);
     } catch (error) {
       toast.error("Failed to fetch branches.");
@@ -54,27 +64,23 @@ const BranchComponent = () => {
   const createBranch = async () => {
     try {
       const formData = new FormData();
-      formData.append("name", newBranch.name);
-      formData.append("address", newBranch.address);
-      formData.append("image", newBranch.image);
-      const response = await axios.post(
-        "http://localhost:8888/trustGroup/public/api/branches",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      // setBranches((prevBranches) => [response.data.data, ...prevBranches]);
-      // const newBranchData = response.data.data;
-      // setBranches((prevBranches) => [newBranchData, ...prevBranches]);
+      formData.append("name", newBranch.data.name);
+      formData.append("address", newBranch.data.address);
+      formData.append("image", newBranch.data.image_url);
+      const response = await axios.post("http://localhost:8888/trustGroup/public/api/branches", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       await fetchBranches();
       toast.success("Branch created successfully.");
       setNewBranch({
-        name: "",
-        address: "",
-        image: null,
+        data: {
+          id: "",
+          name: "",
+          address: "",
+          image_url: "",
+        },
       });
       setOpen(false);
     } catch (error) {
@@ -86,26 +92,20 @@ const BranchComponent = () => {
     try {
       const formData = new FormData();
       formData.append("_method", "PUT");
-      formData.append("name", newBranch.name);
-      formData.append("address", newBranch.address);
-      formData.append("image", newBranch.image);
+      formData.append("name", newBranch.data.name);
+      formData.append("address", newBranch.data.address);
+      formData.append("image", newBranch.data.image_url);
 
       const response = await axios.post(
-        `http://localhost:8888/trustGroup/public/api/branches/${selectedBranch.data.id}`,
+        `http://localhost:8888/trustGroup/public/api/branches/${selectedBranch?.data.id}`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
           },
-        }
+        },
       );
 
-      // const updatedBranchData = response.data.data;
-      // setBranches((prevBranches) =>
-      //   prevBranches.map((branch) =>
-      //     branch.data.id === selectedBranch.data.id ? updatedBranchData : branch
-      //   )
-      // );
       await fetchBranches();
       toast.success("Branch updated successfully.");
       setSelectedBranch(null);
@@ -115,14 +115,10 @@ const BranchComponent = () => {
     }
   };
 
-  const deleteBranch = async (branch) => {
+  const deleteBranch = async (branch: Branch) => {
     try {
-      await axios.delete(
-        `http://localhost:8888/trustGroup/public/api/branches/${branch.data.id}`
-      );
-      const updatedBranches = branches.filter(
-        (p) => p.data.id !== branch.data.id
-      );
+      await axios.delete(`http://localhost:8888/trustGroup/public/api/branches/${branch.data.id}`);
+      const updatedBranches = branches.filter((p) => p.data.id !== branch.data.id);
       setBranches(updatedBranches);
       toast.success("Branch deleted successfully.");
       setDeleteConfirmationOpen(false);
@@ -132,24 +128,29 @@ const BranchComponent = () => {
     }
   };
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewBranch((prevNewBranch) => ({
-      ...prevNewBranch,
-      [event.target.name]: event.target.value,
+      data: {
+        ...prevNewBranch.data,
+        [event.target.name]: event.target.value,
+      },
     }));
   };
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
-  const handleFileChange = (event) => {
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewBranch({
-      ...newBranch,
-      image: event.target.files[0],
+      data: {
+        ...newBranch.data,
+        image_url: event.target.files[0],
+      },
     });
   };
 
@@ -159,12 +160,8 @@ const BranchComponent = () => {
 
   const filteredBranches = currentBranches.filter((branch) => {
     if (branch.data && branch.data.name) {
-      const nameMatch = branch.data.name
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
-      const addressMatch = branch.data.address
-        .toLowerCase()
-        .includes(searchKeyword.toLowerCase());
+      const nameMatch = branch.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const addressMatch = branch.data.address.toLowerCase().includes(searchKeyword.toLowerCase());
       return nameMatch || addressMatch;
     }
     return false;
@@ -176,12 +173,15 @@ const BranchComponent = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = (branch) => {
+  const openEditFormPopup = (branch: Branch) => {
     setSelectedBranch(branch);
     setNewBranch({
-      name: branch.data.name,
-      address: branch.data.address,
-      image: branch.data.image_url,
+      data: {
+        id: branch.data.id,
+        name: branch.data.name,
+        address: branch.data.address,
+        image_url: branch.data.image_url,
+      },
     });
     setOpen(true);
   };
@@ -191,7 +191,7 @@ const BranchComponent = () => {
     setOpen(false);
   };
 
-  const openDeleteConfirmation = (branch) => {
+  const openDeleteConfirmation = (branch: Branch) => {
     setDeleteConfirmationOpen(true);
     setBranchToDelete(branch);
   };
@@ -203,16 +203,16 @@ const BranchComponent = () => {
 
   return (
     <div>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <div className='mb-10 flex items-center justify-between gap-3'>
         <TextField
-          label="Search"
-          size="small"
+          label='Search'
+          size='small'
           value={searchKeyword}
           onChange={handleSearchChange}
-          variant="outlined"
+          variant='outlined'
           mb={2}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant='contained' color='primary' onClick={openFormPopup}>
           Create Branch
         </Button>
       </div>
@@ -223,7 +223,7 @@ const BranchComponent = () => {
               <TableCell>Name</TableCell>
               <TableCell>Address</TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>Image</TableCell>
-              <TableCell align="right">Action</TableCell>
+              <TableCell align='right'>Action</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -231,23 +231,13 @@ const BranchComponent = () => {
               <TableRow key={branch.data.id}>
                 <TableCell>{branch.data.name}</TableCell>
                 <TableCell>{branch.data.address}</TableCell>
-                <TableCell className="max-w-[30rem] break-words">
-                  {branch.data.image_url}
-                </TableCell>
+                <TableCell className='max-w-[30rem] break-words'>{branch.data.image_url}</TableCell>
                 <TableCell>
-                  <div className="flex flex-wrap items-center justify-end gap-5">
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => openEditFormPopup(branch)}
-                    >
+                  <div className='flex flex-wrap items-center justify-end gap-5'>
+                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(branch)}>
                       Edit
                     </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={() => openDeleteConfirmation(branch)}
-                    >
+                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(branch)}>
                       Delete
                     </Button>
                   </div>
@@ -257,86 +247,60 @@ const BranchComponent = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      <Box mt={2} display="flex" justifyContent="center">
+      <Box mt={2} display='flex' justifyContent='center'>
         <Pagination
           count={totalPages}
           page={currentPage}
           onChange={handlePageChange}
-          color="primary"
+          color='primary'
           showFirstButton
           showLastButton
         />
       </Box>
-      <Dialog
-        open={open}
-        onClose={closeFormPopup}
-        PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}
-      >
-        <DialogTitle className="!pt-10">
-          {selectedBranch ? "Edit Branch" : "Create New Branch"}
-        </DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-10 !pt-6">
+      <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
+        <DialogTitle className='!pt-10'>{selectedBranch ? "Edit Branch" : "Create New Branch"}</DialogTitle>
+        <DialogContent className='flex w-full flex-col gap-y-10 !pt-6'>
           <TextField
-            name="name"
-            label="Name"
-            value={newBranch.name}
+            name='name'
+            label='Name'
+            value={newBranch.data.name}
             onChange={handleInputChange}
-            variant="outlined"
+            variant='outlined'
             fullWidth
-            mb={2}
+            sx={{ marginBottom: "2rem" }}
           />
           <TextField
-            name="address"
-            label="Address"
-            value={newBranch.address}
+            name='address'
+            label='Address'
+            value={newBranch.data.address}
             onChange={handleInputChange}
-            variant="outlined"
+            variant='outlined'
             multiline
             rows={4}
             fullWidth
-            mb={2}
+            sx={{ marginBottom: "2rem" }}
           />
           {selectedBranch && selectedBranch.data.image_url && (
-            <img
-              src={selectedBranch.data.image_url}
-              alt="Branch"
-              style={{ width: "100%", marginBottom: "1rem" }}
-            />
+            <img src={selectedBranch.data.image_url} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />
           )}
-          <input type="file" onChange={handleFileChange} />
+          <input type='file' onChange={handleFileChange} />
         </DialogContent>
-        <DialogActions className="!p-10">
+        <DialogActions className='!p-10'>
           {selectedBranch ? (
             <>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={updateBranch}
-              >
+              <Button variant='contained' color='primary' onClick={updateBranch}>
                 Update
               </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={closeFormPopup}
-              >
+              <Button variant='contained' color='secondary' onClick={closeFormPopup}>
                 Cancel
               </Button>
             </>
           ) : (
             <>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={createBranch}
-              >
+              <Button variant='contained' color='primary' onClick={createBranch}>
                 Create
               </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={closeFormPopup}
-              >
+              <Button variant='contained' color='secondary' onClick={closeFormPopup}>
                 Cancel
               </Button>
             </>
@@ -346,23 +310,13 @@ const BranchComponent = () => {
       <Dialog open={deleteConfirmationOpen} onClose={closeDeleteConfirmation}>
         <DialogTitle>Delete Branch</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this branch?
-          </DialogContentText>
+          <DialogContentText>Are you sure you want to delete this branch?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={() => deleteBranch(branchToDelete)}
-          >
+          <Button variant='contained' color='secondary' onClick={() => deleteBranch(branchToDelete)}>
             Delete
           </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={closeDeleteConfirmation}
-          >
+          <Button variant='contained' color='primary' onClick={closeDeleteConfirmation}>
             Cancel
           </Button>
         </DialogActions>

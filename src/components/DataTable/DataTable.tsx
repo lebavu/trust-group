@@ -100,13 +100,7 @@ const EnhancedTable = () => {
   };
 
   const handleNewEntrySave = () => {
-    const newRow = createData(
-      newEntry.name,
-      newEntry.calories,
-      newEntry.fat,
-      newEntry.carbs,
-      newEntry.protein
-    );
+    const newRow = createData(newEntry.name, newEntry.calories, newEntry.fat, newEntry.carbs, newEntry.protein);
     rows.push(newRow);
     setNewEntry({
       name: "",
@@ -119,9 +113,7 @@ const EnhancedTable = () => {
     toast.error("Entry deleted successfully!");
   };
 
-  const filteredRows = rows.filter((row) =>
-    row.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRows = rows.filter((row) => row.name.toLowerCase().includes(searchQuery.toLowerCase()));
   //edit handle
   const handleEditRow = (row) => {
     setEditedRow(row);
@@ -147,28 +139,22 @@ const EnhancedTable = () => {
 
   return (
     <Box>
-      <Typography variant="h2" component="h2" mb={3}>
+      <Typography variant='h2' component='h2' mb={3}>
         Blogs
       </Typography>
-      <Box
-        display="flex"
-        flexWrap="wrap"
-        gap={2}
-        alignItems="center"
-        marginBottom="1rem"
-      >
+      <Box display='flex' flexWrap='wrap' gap={2} alignItems='center' marginBottom='1rem'>
         <TextField
-          label="Search"
-          variant="outlined"
+          label='Search'
+          variant='outlined'
           value={searchQuery}
           onChange={handleSearchChange}
           fullWidth
-          size="small"
-          className="md:max-w-[25rem]"
+          size='small'
+          className='md:max-w-[25rem]'
         />
         <Button
-          variant="contained"
-          color="primary"
+          variant='contained'
+          color='primary'
           startIcon={<AddCircleIcon />}
           style={{ marginLeft: "auto" }}
           onClick={handleAddNew}
@@ -180,56 +166,46 @@ const EnhancedTable = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
+              <TableCell padding='checkbox'>
                 <Checkbox />
               </TableCell>
               {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  align="left"
-                  style={{ minWidth: column.minWidth }}
-                >
+                <TableCell key={column.id} align='left' style={{ minWidth: column.minWidth }}>
                   {column.label}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredRows
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => (
-                <TableRow key={row.name}>
-                  <TableCell padding="checkbox">
-                    <Checkbox />
-                  </TableCell>
-                  <TableCell align="left">{row.name}</TableCell>
-                  <TableCell align="left">{row.calories}</TableCell>
-                  <TableCell align="left">{row.fat}</TableCell>
-                  <TableCell align="left">{row.carbs}</TableCell>
-                  <TableCell align="left">{row.protein}</TableCell>
-                  <TableCell align="left">
-                    <Tooltip title="Edit">
-                      <IconButton
-                        aria-label="Edit"
-                        color="primary"
-                        onClick={() => handleEditRow(row)}
-                      >
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete">
-                      <IconButton aria-label="Delete" color="secondary">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {filteredRows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => (
+              <TableRow key={row.name}>
+                <TableCell padding='checkbox'>
+                  <Checkbox />
+                </TableCell>
+                <TableCell align='left'>{row.name}</TableCell>
+                <TableCell align='left'>{row.calories}</TableCell>
+                <TableCell align='left'>{row.fat}</TableCell>
+                <TableCell align='left'>{row.carbs}</TableCell>
+                <TableCell align='left'>{row.protein}</TableCell>
+                <TableCell align='left'>
+                  <Tooltip title='Edit'>
+                    <IconButton aria-label='Edit' color='primary' onClick={() => handleEditRow(row)}>
+                      <EditIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title='Delete'>
+                    <IconButton aria-label='Delete' color='secondary'>
+                      <DeleteIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
-          component="div"
+          component='div'
           count={filteredRows.length}
           rowsPerPage={rowsPerPage}
           page={page}
@@ -250,68 +226,60 @@ const EnhancedTable = () => {
             p: 4,
           }}
         >
-          <Typography variant="h6" component="h2" sx={{ marginBottom: "1rem" }}>
+          <Typography variant='h6' component='h2' sx={{ marginBottom: "1rem" }}>
             Edit Entry
           </Typography>
           <TextField
-            label="Dessert"
-            name="name"
+            label='Dessert'
+            name='name'
             value={editedRow?.name || ""}
             onChange={handleEditEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Calories"
-            name="calories"
+            label='Calories'
+            name='calories'
             value={editedRow?.calories || ""}
             onChange={handleEditEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Fat (g)"
-            name="fat"
+            label='Fat (g)'
+            name='fat'
             value={editedRow?.fat || ""}
             onChange={handleEditEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Carbs (g)"
-            name="carbs"
+            label='Carbs (g)'
+            name='carbs'
             value={editedRow?.carbs || ""}
             onChange={handleEditEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Protein (g)"
-            name="protein"
+            label='Protein (g)'
+            name='protein'
             value={editedRow?.protein || ""}
             onChange={handleEditEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
-          <Box display="flex" gap={2} flexWrap="wrap" mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleEditEntrySave}
-            >
+          <Box display='flex' gap={2} flexWrap='wrap' mt={2}>
+            <Button variant='contained' color='primary' onClick={handleEditEntrySave}>
               Save
             </Button>
-            <Button variant="contained" onClick={() => setOpenEditModal(false)}>
+            <Button variant='contained' onClick={() => setOpenEditModal(false)}>
               Cancel
             </Button>
           </Box>
         </Box>
       </Modal>
-      <Modal
-        open={openModal}
-        onClose={handleModalClose}
-        aria-labelledby="add-new-modal"
-      >
+      <Modal open={openModal} onClose={handleModalClose} aria-labelledby='add-new-modal'>
         <Box
           sx={{
             position: "absolute",
@@ -324,62 +292,54 @@ const EnhancedTable = () => {
             p: 4,
           }}
         >
-          <Typography variant="h3" component="h3" gutterBottom>
+          <Typography variant='h3' component='h3' gutterBottom>
             Add New
           </Typography>
           <TextField
-            label="Dessert"
-            name="name"
+            label='Dessert'
+            name='name'
             value={newEntry.name}
             onChange={handleNewEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Calories"
-            name="calories"
+            label='Calories'
+            name='calories'
             value={newEntry.calories}
             onChange={handleNewEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Fat (g)"
-            name="fat"
+            label='Fat (g)'
+            name='fat'
             value={newEntry.fat}
             onChange={handleNewEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Carbs (g)"
-            name="carbs"
+            label='Carbs (g)'
+            name='carbs'
             value={newEntry.carbs}
             onChange={handleNewEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
           <TextField
-            label="Protein (g)"
-            name="protein"
+            label='Protein (g)'
+            name='protein'
             value={newEntry.protein}
             onChange={handleNewEntryChange}
             fullWidth
-            margin="normal"
+            margin='normal'
           />
-          <Box display="flex" gap={2} flexWrap="wrap" mt={2}>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleNewEntrySave}
-            >
+          <Box display='flex' gap={2} flexWrap='wrap' mt={2}>
+            <Button variant='contained' color='primary' onClick={handleNewEntrySave}>
               Submit
             </Button>
-            <Button
-              variant="contained"
-              color="error"
-              onClick={handleModalClose}
-            >
+            <Button variant='contained' color='error' onClick={handleModalClose}>
               Cancel
             </Button>
           </Box>

@@ -14,10 +14,9 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ArchiveIcon from "@mui/icons-material/Archive";
-import { Link, NavLink, useNavigation } from "react-router-dom";
+import { Link, NavLink, useNavigation, useNavigate } from "react-router-dom";
 import config from "@/config";
 import Navbar from "src/components/Navbar";
-import { useNavigate } from "react-router-dom";
 import { useAppStore } from "@/appStore";
 
 const drawerWidth = 240;
@@ -86,7 +85,7 @@ export default function DefaultLayout({ children }) {
       <Box height={50} />
       <Box sx={{ display: "flex" }}>
         <CssBaseline />
-        <Drawer variant="permanent" open={open}>
+        <Drawer variant='permanent' open={open}>
           <DrawerHeader>
             <IconButton
               sx={{
@@ -96,11 +95,7 @@ export default function DefaultLayout({ children }) {
                 },
               }}
             >
-              {theme.direction === "rtl" ? (
-                <ChevronRightIcon />
-              ) : (
-                <ChevronLeftIcon />
-              )}
+              {theme.direction === "rtl" ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </DrawerHeader>
           <Divider />
@@ -108,10 +103,7 @@ export default function DefaultLayout({ children }) {
           <List>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Blogs}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Blogs}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -121,19 +113,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Blogs"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Branches}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Branches}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -143,19 +129,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Branches"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Branches' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.EValuationCategories}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.EValuationCategories}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -165,19 +145,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="E Valuation Categories"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation Categories' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.EValuations}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.EValuations}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -187,19 +161,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="E Valuation"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.InstalmentPlans}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.InstalmentPlans}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -209,19 +177,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Instalment Plans"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Instalment Plans' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.PawnTickets}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.PawnTickets}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -231,19 +193,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Pawn Tickets"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Pawn Tickets' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.ProductCategories}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.ProductCategories}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -253,19 +209,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Product Categories"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Product Categories' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Products}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Products}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -275,19 +225,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Products"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Products' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Projects}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Projects}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -297,19 +241,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Projects"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Projects' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Roles}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Roles}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -319,19 +257,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Roles"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Roles' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Stories}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Stories}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -341,19 +273,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Stories"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Stories' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink
-                  className="flex w-full items-center gap-3"
-                  to={config.routes.Users}
-                >
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Users}>
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -363,19 +289,13 @@ export default function DefaultLayout({ children }) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText
-                    sx={{ opacity: open ? 1 : 0 }}
-                    primary="Users"
-                  />
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Users' />
                 </NavLink>
               </ListItemButton>
             </ListItem>
           </List>
         </Drawer>
-        <Box
-          component="main"
-          sx={{ flexGrow: 1, padding: "5rem 3rem", width: 100 + "%" }}
-        >
+        <Box component='main' sx={{ flexGrow: 1, padding: "5rem 3rem", width: 100 + "%" }}>
           {children}
         </Box>
       </Box>
