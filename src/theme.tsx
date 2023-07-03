@@ -13,15 +13,6 @@ const theme = createTheme({
     error: {
       main: red.A400,
     },
-    color: {
-      blue: "#007FFF",
-      greyF6: "#f6f6f7",
-      greyEd: "#ededed",
-      grey999: "#999",
-      greyFb: "#FBFBFB",
-      grey18: "#18181B",
-      green: "#12B76A",
-    },
   },
   typography: {
     fontSize: 19.6, // Set the base font size

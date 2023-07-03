@@ -5,7 +5,6 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   Button,
   TextField,
-  Modal,
   Box,
   Table,
   TableContainer,
@@ -20,6 +19,14 @@ import {
   DialogTitle,
   Pagination,
 } from "@mui/material";
+interface EValuationCategory {
+  data: {
+    id: string;
+    name: string;
+    desc: string;
+    parent: string;
+  };
+}
 
 const EValuationComponent = () => {
   const [categories, setCategories] = useState([]);
@@ -34,7 +41,7 @@ const EValuationComponent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [categoriesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<EValuationCategory | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -45,13 +52,13 @@ const EValuationComponent = () => {
       const response = await axios.get("http://localhost:8888/trustGroup/public/api/e-valuation-categories");
       setCategories(response.data.data);
     } catch (error) {
-      toast.error("Failed to fetch categories.");
+      toast.error("Failed to fetch branches.");
     }
   };
 
   const createCategory = async () => {
     try {
-      const response = await axios.post("http://localhost:8888/trustGroup/public/api/e-valuation-categories", {
+      await axios.post("http://localhost:8888/trustGroup/public/api/e-valuation-categories", {
         name: newCategory.name,
         desc: newCategory.desc,
         parent: newCategory.parent,
@@ -71,7 +78,7 @@ const EValuationComponent = () => {
 
   const updateCategory = async () => {
     try {
-      const response = await axios.put(
+      await axios.put(
         `http://localhost:8888/trustGroup/public/api/e-valuation-categories/${selectedCategory.data.id}`,
         {
           name: newCategory.name,
@@ -88,7 +95,10 @@ const EValuationComponent = () => {
     }
   };
 
-  const deleteCategory = async (category) => {
+  const deleteCategory = async (category: { data: { id: number } }) => {
+    if (!category) {
+      return;
+    }
     try {
       await axios.delete(`http://localhost:8888/trustGroup/public/api/e-valuation-categories/${category.data.id}`);
       const updatedCategories = categories.filter((p) => p.data.id !== category.data.id);
@@ -101,18 +111,18 @@ const EValuationComponent = () => {
     }
   };
 
-  const handleInputChange = (event) => {
+  const handleInputChange = (event: any) => {
     setNewCategory((prevNewCategory) => ({
       ...prevNewCategory,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: any) => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (event: any, value: any) => {
     setCurrentPage(value);
   };
 
@@ -135,7 +145,7 @@ const EValuationComponent = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = (category) => {
+  const openEditFormPopup = (category: any) => {
     setSelectedCategory(category);
     setNewCategory({
       name: category.data.name,
@@ -150,7 +160,7 @@ const EValuationComponent = () => {
     setOpen(false);
   };
 
-  const openDeleteConfirmation = (category) => {
+  const openDeleteConfirmation = (category: any) => {
     setDeleteConfirmationOpen(true);
     setCategoryToDelete(category);
   };

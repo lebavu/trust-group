@@ -1,5 +1,4 @@
-import * as React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -26,9 +25,20 @@ interface Branch {
     id: string;
     name: string;
     address: string;
-    image_url: string;
+    image_url: string | File;
   };
 }
+
+const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
+  if (typeof imageUrl === "string") {
+    return <img src={imageUrl} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />;
+  } else if (imageUrl instanceof File) {
+    const temporaryUrl = URL.createObjectURL(imageUrl);
+    return <img src={temporaryUrl} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />;
+  } else {
+    return null;
+  }
+};
 
 const BranchComponent: React.FC = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -47,7 +57,6 @@ const BranchComponent: React.FC = () => {
   const [branchesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
-
   useEffect(() => {
     fetchBranches();
   }, []);
@@ -67,7 +76,7 @@ const BranchComponent: React.FC = () => {
       formData.append("name", newBranch.data.name);
       formData.append("address", newBranch.data.address);
       formData.append("image", newBranch.data.image_url);
-      const response = await axios.post("http://localhost:8888/trustGroup/public/api/branches", formData, {
+      await axios.post("http://localhost:8888/trustGroup/public/api/branches", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
@@ -96,15 +105,11 @@ const BranchComponent: React.FC = () => {
       formData.append("address", newBranch.data.address);
       formData.append("image", newBranch.data.image_url);
 
-      const response = await axios.post(
-        `http://localhost:8888/trustGroup/public/api/branches/${selectedBranch?.data.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+      await axios.post(`http://localhost:8888/trustGroup/public/api/branches/${selectedBranch?.data.id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
         },
-      );
+      });
 
       await fetchBranches();
       toast.success("Branch updated successfully.");
@@ -115,12 +120,14 @@ const BranchComponent: React.FC = () => {
     }
   };
 
-  const deleteBranch = async (branch: Branch) => {
+  const deleteBranch = async (branch: Branch | null) => {
     try {
-      await axios.delete(`http://localhost:8888/trustGroup/public/api/branches/${branch.data.id}`);
-      const updatedBranches = branches.filter((p) => p.data.id !== branch.data.id);
-      setBranches(updatedBranches);
-      toast.success("Branch deleted successfully.");
+      if (branch) {
+        await axios.delete(`http://localhost:8888/trustGroup/public/api/branches/${branch.data.id}`);
+        const updatedBranches = branches.filter((p) => p.data.id !== branch.data.id);
+        setBranches(updatedBranches);
+        toast.success("Branch deleted successfully.");
+      }
       setDeleteConfirmationOpen(false);
       setBranchToDelete(null);
     } catch (error) {
@@ -146,12 +153,15 @@ const BranchComponent: React.FC = () => {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setNewBranch({
-      data: {
-        ...newBranch.data,
-        image_url: event.target.files[0],
-      },
-    });
+    const file = event.target.files?.[0];
+    if (file) {
+      setNewBranch({
+        data: {
+          ...newBranch.data,
+          image_url: file,
+        },
+      });
+    }
   };
 
   const indexOfLastBranch = currentPage * branchesPerPage;
@@ -210,7 +220,7 @@ const BranchComponent: React.FC = () => {
           value={searchKeyword}
           onChange={handleSearchChange}
           variant='outlined'
-          mb={2}
+          sx={{ marginBottom: "2rem" }}
         />
         <Button variant='contained' color='primary' onClick={openFormPopup}>
           Create Branch
@@ -231,7 +241,7 @@ const BranchComponent: React.FC = () => {
               <TableRow key={branch.data.id}>
                 <TableCell>{branch.data.name}</TableCell>
                 <TableCell>{branch.data.address}</TableCell>
-                <TableCell className='max-w-[30rem] break-words'>{branch.data.image_url}</TableCell>
+                <TableCell className='max-w-[30rem] break-words'>{renderImageUrl(branch.data.image_url)}</TableCell>
                 <TableCell>
                   <div className='flex flex-wrap items-center justify-end gap-5'>
                     <Button variant='contained' color='primary' onClick={() => openEditFormPopup(branch)}>
@@ -280,9 +290,9 @@ const BranchComponent: React.FC = () => {
             fullWidth
             sx={{ marginBottom: "2rem" }}
           />
-          {selectedBranch && selectedBranch.data.image_url && (
+          {/* {selectedBranch && selectedBranch.data.image_url && (
             <img src={selectedBranch.data.image_url} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />
-          )}
+          )} */}
           <input type='file' onChange={handleFileChange} />
         </DialogContent>
         <DialogActions className='!p-10'>

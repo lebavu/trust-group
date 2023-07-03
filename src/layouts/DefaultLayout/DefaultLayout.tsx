@@ -1,6 +1,8 @@
-import * as React from "react";
+import React, { ReactNode } from "react";
 import PropTypes from "prop-types";
-import { styled, useTheme, Theme, CSSObject } from "@mui/material/styles";
+import { styled, useTheme } from "@mui/material/styles";
+import { type Theme } from "@mui/material";
+import { type CSSObject } from "@emotion/react";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
 import List from "@mui/material/List";
@@ -14,12 +16,16 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import ArchiveIcon from "@mui/icons-material/Archive";
-import { Link, NavLink, useNavigation, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import config from "@/config";
 import Navbar from "src/components/Navbar";
 import { useAppStore } from "@/appStore";
 
 const drawerWidth = 240;
+
+DefaultLayout.propTypes = {
+  children: PropTypes.node.isRequired,
+};
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
@@ -74,10 +80,9 @@ const Drawer = styled(MuiDrawer, {
     "& .MuiDrawer-paper": closedMixin(theme),
   }),
 }));
-export default function DefaultLayout({ children }) {
+export default function DefaultLayout({ children }: { children: ReactNode }) {
   const theme = useTheme();
-  // const [open, setOpen] = React.useState(false);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const open = useAppStore((state) => state.dopen);
   return (
     <>

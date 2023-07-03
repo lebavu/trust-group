@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { Box, Container, Typography, TextField, Button, Tabs, Tab, List, ListItem, ListItemText } from "@mui/material";
 
 interface MyAccountProps {
-  // Các props cần thiết cho component MyAccount có thể được khai báo ở đây
+  name: string;
+  email: string;
 }
 
 const MyAccount: React.FC<MyAccountProps> = () => {

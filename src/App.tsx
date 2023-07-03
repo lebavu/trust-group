@@ -1,22 +1,27 @@
+import React, { ReactElement, ComponentType } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { publicRoutes } from "@/routes";
 import DefaultLayout from "@/layouts/DefaultLayout";
 
-function App() {
+interface RouteConfig {
+  path: string;
+  component: ComponentType<any>;
+  layout?: ComponentType<any> | null;
+}
+
+function App(): ReactElement {
   return (
     <Router>
       <div className='App'>
         <Routes>
-          {publicRoutes.map((route, index) => {
+          {publicRoutes.map((route: RouteConfig, index: number) => {
             const Page = route.component;
-            let Layout: React.ComponentType = DefaultLayout;
-
+            let Layout: ComponentType<any> = DefaultLayout;
             if (route.layout) {
               Layout = route.layout;
             } else if (route.layout === null) {
               Layout = React.Fragment;
             }
-
             return (
               <Route
                 key={index}

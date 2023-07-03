@@ -1,9 +1,14 @@
-import { create } from "zustand";
+import { create, SetState } from "zustand";
 import { persist } from "zustand/middleware";
 
-const appStore = (set) => ({
+interface AppState {
+  dopen: boolean;
+  updateOpen: (dopen: boolean) => void;
+}
+
+const appStore = (set: SetState<AppState>): AppState => ({
   dopen: true,
-  updateOpen: (dopen) => set((state) => ({ dopen: dopen })),
+  updateOpen: (dopen) => set((state: AppState) => ({ ...state, dopen })),
 });
 
 const persistedAppStore = persist(appStore, { name: "my_app_store" });
