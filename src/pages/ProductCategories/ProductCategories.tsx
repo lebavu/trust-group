@@ -20,143 +20,165 @@ import {
   Pagination,
 } from "@mui/material";
 
-const ProductCategoriesComponent = () => {
-  const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({
+interface EValuationCategory {
+  data: {
+    id: string;
+    name: string;
+    desc: string;
+    parent: string;
+  };
+}
+
+const EValuationCategoriesComponent: React.FC = () => {
+  const [categories, setCategories] = useState<EValuationCategory[]>([]);
+  const [newCategory, setNewCategory] = useState({
     name: "",
     desc: "",
     parent: "",
   });
-  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<EValuationCategory | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage] = useState(5);
+  const [categoriesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ data: { id: string } } | null>(null);
 
   useEffect(() => {
-    fetchProducts();
+    fetchCategories();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchCategories = async () => {
     try {
       const response = await axios.get("http://localhost:8888/trustGroup/public/api/product-categories");
-      setProducts(response.data.data);
+      setCategories(response.data.data);
     } catch (error) {
-      toast.error("Failed to fetch products.");
+      toast.error("Failed to fetch branches.");
     }
   };
 
-  const createProduct = async () => {
+  const createCategory = async () => {
     try {
-      const response = await axios.post("http://localhost:8888/trustGroup/public/api/product-categories", {
-        name: newProduct.name,
-        desc: newProduct.desc,
-        parent: newProduct.parent,
+      await axios.post("http://localhost:8888/trustGroup/public/api/product-categories", {
+        name: newCategory.name,
+        desc: newCategory.desc,
+        parent: newCategory.parent,
       });
-      await fetchProducts();
-      toast.success("Product created successfully.");
-      setNewProduct({
+      await fetchCategories();
+      toast.success("Category created successfully.");
+      setNewCategory({
         name: "",
         desc: "",
         parent: "",
       });
       setOpen(false);
     } catch (error) {
-      toast.error("Failed to create product.");
+      toast.error("Failed to create category.");
     }
   };
 
-  const updateProduct = async () => {
+  const updateCategory = async () => {
     try {
-      const response = await axios.put(
-        `http://localhost:8888/trustGroup/public/api/product-categories/${selectedProduct.data.id}`,
-        {
-          name: newProduct.name,
-          desc: newProduct.desc,
-          parent: newProduct.parent,
-        },
+      await axios.put(`http://localhost:8888/trustGroup/public/api/product-categories/${selectedCategory?.data.id}`, {
+        name: newCategory.name,
+        desc: newCategory.desc,
+        parent: newCategory.parent,
+      });
+
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.data.id === selectedCategory?.data.id
+            ? { ...category, data: { ...category.data, ...newCategory } }
+            : category,
+        ),
       );
-      await fetchProducts();
-      toast.success("Product updated successfully.");
-      setSelectedProduct(null);
+
+      toast.success("Category updated successfully.");
+      setSelectedCategory(null);
       setOpen(false);
+      setNewCategory({
+        name: "",
+        desc: "",
+        parent: "",
+      });
     } catch (error) {
-      toast.error("Failed to update product.");
+      toast.error("Failed to update category.");
     }
   };
 
-  const deleteProduct = async (product) => {
+  const deleteCategory = async (category: { data: { id: string } } | null) => {
+    if (!category) {
+      return;
+    }
     try {
-      await axios.delete(`http://localhost:8888/trustGroup/public/api/product-categories/${product.data.id}`);
-      const updatedProducts = products.filter((p) => p.data.id !== product.data.id);
-      setProducts(updatedProducts);
-      toast.success("Product deleted successfully.");
+      await axios.delete(`http://localhost:8888/trustGroup/public/api/product-categories/${category.data.id}`);
+      const updatedCategories = categories.filter((p) => p.data.id !== category.data.id);
+      setCategories(updatedCategories);
+      toast.success("Category deleted successfully.");
       setDeleteConfirmationOpen(false);
-      setProductToDelete(null);
+      setCategoryToDelete(null);
     } catch (error) {
-      toast.error("Failed to delete product.");
+      toast.error("Failed to delete category.");
     }
   };
 
-  const handleInputChange = (event) => {
-    setNewProduct((prevNewProduct) => ({
-      ...prevNewProduct,
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setNewCategory((prevNewCategory) => ({
+      ...prevNewCategory,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSearchChange = (event) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (event, value) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
 
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const indexOfLastCategory = currentPage * categoriesPerPage;
+  const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
+  const currentCategories = categories.slice(indexOfFirstCategory, indexOfLastCategory);
 
-  const filteredProducts = currentProducts.filter((product) => {
-    if (product.data && product.data.name) {
-      const nameMatch = product.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      const descMatch = product.data.desc.toLowerCase().includes(searchKeyword.toLowerCase());
+  const filteredCategories = currentCategories.filter((category) => {
+    if (category.data && category.data.name) {
+      const nameMatch = category.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const descMatch = category.data.desc.toLowerCase().includes(searchKeyword.toLowerCase());
       return nameMatch || descMatch;
     }
     return false;
   });
 
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const totalPages = Math.ceil(categories.length / categoriesPerPage);
 
   const openFormPopup = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = (product) => {
-    setSelectedProduct(product);
-    setNewProduct({
-      name: product.data.name,
-      desc: product.data.desc,
-      parent: product.data.parent,
+  const openEditFormPopup = (category: EValuationCategory) => {
+    setSelectedCategory(category);
+    setNewCategory({
+      name: category.data.name,
+      desc: category.data.desc,
+      parent: category.data.parent,
     });
     setOpen(true);
   };
 
   const closeFormPopup = () => {
-    setSelectedProduct(null);
+    setSelectedCategory(null);
     setOpen(false);
   };
 
-  const openDeleteConfirmation = (product) => {
+  const openDeleteConfirmation = (category: EValuationCategory) => {
     setDeleteConfirmationOpen(true);
-    setProductToDelete(product);
+    setCategoryToDelete(category);
   };
 
   const closeDeleteConfirmation = () => {
     setDeleteConfirmationOpen(false);
-    setProductToDelete(null);
+    setCategoryToDelete(null);
   };
 
   return (
@@ -164,7 +186,7 @@ const ProductCategoriesComponent = () => {
       <div className='mb-10 flex items-center justify-between gap-3'>
         <TextField label='Search' size='small' value={searchKeyword} onChange={handleSearchChange} variant='outlined' />
         <Button variant='contained' color='primary' onClick={openFormPopup}>
-          Create Product
+          Create Category
         </Button>
       </div>
       <TableContainer>
@@ -178,17 +200,17 @@ const ProductCategoriesComponent = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts.map((product) => (
-              <TableRow key={product.data.id}>
-                <TableCell>{product.data.name}</TableCell>
-                <TableCell>{product.data.desc}</TableCell>
-                <TableCell>{product.data.parent}</TableCell>
+            {filteredCategories.map((category) => (
+              <TableRow key={category.data.id}>
+                <TableCell>{category.data.name}</TableCell>
+                <TableCell>{category.data.desc}</TableCell>
+                <TableCell>{category.data.parent}</TableCell>
                 <TableCell>
                   <div className='flex flex-wrap items-center justify-end gap-5'>
-                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(product)}>
+                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(category)}>
                       Edit
                     </Button>
-                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(product)}>
+                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(category)}>
                       Delete
                     </Button>
                   </div>
@@ -209,12 +231,12 @@ const ProductCategoriesComponent = () => {
         />
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
-        <DialogTitle>{selectedProduct ? "Edit Product" : "Create New Product"}</DialogTitle>
+        <DialogTitle>{selectedCategory ? "Edit Category" : "Create New Category"}</DialogTitle>
         <DialogContent>
           <TextField
             name='name'
             label='Name'
-            value={newProduct.name}
+            value={newCategory.name}
             onChange={handleInputChange}
             variant='outlined'
             fullWidth
@@ -223,7 +245,7 @@ const ProductCategoriesComponent = () => {
           <TextField
             name='desc'
             label='Description'
-            value={newProduct.desc}
+            value={newCategory.desc}
             onChange={handleInputChange}
             variant='outlined'
             fullWidth
@@ -232,7 +254,7 @@ const ProductCategoriesComponent = () => {
           <TextField
             name='parent'
             label='Parent'
-            value={newProduct.parent}
+            value={newCategory.parent || ""}
             onChange={handleInputChange}
             variant='outlined'
             fullWidth
@@ -240,8 +262,8 @@ const ProductCategoriesComponent = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={selectedProduct ? updateProduct : createProduct}>
-            {selectedProduct ? "Update" : "Create"}
+          <Button onClick={selectedCategory ? updateCategory : createCategory}>
+            {selectedCategory ? "Update" : "Create"}
           </Button>
           <Button onClick={closeFormPopup}>Cancel</Button>
         </DialogActions>
@@ -249,22 +271,22 @@ const ProductCategoriesComponent = () => {
       <Dialog
         open={deleteConfirmationOpen}
         onClose={closeDeleteConfirmation}
-        PaperProps={{ sx: { width: "100%", maxWidth: "40rem" } }}
+        PaperProps={{ sx: { width: "100%", maxWidth: "25rem" } }}
       >
-        <DialogTitle>Delete Product</DialogTitle>
+        <DialogTitle>Delete Category</DialogTitle>
         <DialogContent>
-          <DialogContentText>Are you sure you want to delete the product?</DialogContentText>
+          <DialogContentText>Are you sure you want to delete this category?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => deleteProduct(productToDelete)} color='error'>
+          <Button onClick={() => deleteCategory(categoryToDelete)} color='error'>
             Delete
           </Button>
           <Button onClick={closeDeleteConfirmation}>Cancel</Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
+      <ToastContainer position='top-right' autoClose={3000} hideProgressBar />
     </div>
   );
 };
 
-export default ProductCategoriesComponent;
+export default EValuationCategoriesComponent;

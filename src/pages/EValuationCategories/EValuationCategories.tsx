@@ -19,6 +19,7 @@ import {
   DialogTitle,
   Pagination,
 } from "@mui/material";
+
 interface EValuationCategory {
   data: {
     id: string;
@@ -28,20 +29,20 @@ interface EValuationCategory {
   };
 }
 
-const EValuationComponent = () => {
-  const [categories, setCategories] = useState([]);
+const EValuationCategoriesComponent: React.FC = () => {
+  const [categories, setCategories] = useState<EValuationCategory[]>([]);
   const [newCategory, setNewCategory] = useState({
     name: "",
     desc: "",
     parent: "",
   });
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState<EValuationCategory | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [categoriesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<EValuationCategory | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<{ data: { id: string } } | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -79,23 +80,36 @@ const EValuationComponent = () => {
   const updateCategory = async () => {
     try {
       await axios.put(
-        `http://localhost:8888/trustGroup/public/api/e-valuation-categories/${selectedCategory.data.id}`,
+        `http://localhost:8888/trustGroup/public/api/e-valuation-categories/${selectedCategory?.data.id}`,
         {
           name: newCategory.name,
           desc: newCategory.desc,
           parent: newCategory.parent,
         },
       );
-      await fetchCategories();
+
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.data.id === selectedCategory?.data.id
+            ? { ...category, data: { ...category.data, ...newCategory } }
+            : category,
+        ),
+      );
+
       toast.success("Category updated successfully.");
       setSelectedCategory(null);
       setOpen(false);
+      setNewCategory({
+        name: "",
+        desc: "",
+        parent: "",
+      });
     } catch (error) {
       toast.error("Failed to update category.");
     }
   };
 
-  const deleteCategory = async (category: { data: { id: number } }) => {
+  const deleteCategory = async (category: { data: { id: string } } | null) => {
     if (!category) {
       return;
     }
@@ -111,18 +125,18 @@ const EValuationComponent = () => {
     }
   };
 
-  const handleInputChange = (event: any) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNewCategory((prevNewCategory) => ({
       ...prevNewCategory,
       [event.target.name]: event.target.value,
     }));
   };
 
-  const handleSearchChange = (event: any) => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (event: any, value: any) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
 
@@ -145,7 +159,7 @@ const EValuationComponent = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = (category: any) => {
+  const openEditFormPopup = (category: EValuationCategory) => {
     setSelectedCategory(category);
     setNewCategory({
       name: category.data.name,
@@ -160,7 +174,7 @@ const EValuationComponent = () => {
     setOpen(false);
   };
 
-  const openDeleteConfirmation = (category: any) => {
+  const openDeleteConfirmation = (category: EValuationCategory) => {
     setDeleteConfirmationOpen(true);
     setCategoryToDelete(category);
   };
@@ -278,4 +292,4 @@ const EValuationComponent = () => {
   );
 };
 
-export default EValuationComponent;
+export default EValuationCategoriesComponent;

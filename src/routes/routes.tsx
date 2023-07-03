@@ -18,8 +18,13 @@ import Login from "@/pages/Login";
 import SignUp from "@/pages/SignUp";
 import MyAccount from "@/pages/MyAccount";
 
+interface Route {
+  path: string;
+  component: React.ComponentType<any>;
+}
+
 // Public routes
-const publicRoutes: { path: string; component: React.ComponentType<any> }[] = [
+const publicRoutes: Route[] = [
   { path: config.routes.Home, component: Home },
   { path: config.routes.Blogs, component: Blogs },
   { path: config.routes.Branches, component: Branches },
@@ -38,6 +43,6 @@ const publicRoutes: { path: string; component: React.ComponentType<any> }[] = [
   { path: config.routes.MyAccount, component: MyAccount },
 ];
 
-const privateRoutes: { path: string; component: React.ComponentType<any> }[] = [];
+const privateRoutes: Route[] = [];
 
 export { publicRoutes, privateRoutes };

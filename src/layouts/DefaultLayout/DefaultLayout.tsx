@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import PropTypes from "prop-types";
 import { styled, useTheme } from "@mui/material/styles";
 import { type Theme } from "@mui/material";

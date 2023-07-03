@@ -9,7 +9,7 @@ interface MyAccountProps {
 const MyAccount: React.FC<MyAccountProps> = () => {
   const [tabIndex, setTabIndex] = useState(0);
 
-  const handleTabChange = (event: React.ChangeEvent<{}>, newIndex: number) => {
+  const handleTabChange = (_: React.ChangeEvent<unknown>, newIndex: number) => {
     setTabIndex(newIndex);
   };
 

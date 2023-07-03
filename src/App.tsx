@@ -5,7 +5,7 @@ import DefaultLayout from "@/layouts/DefaultLayout";
 
 interface RouteConfig {
   path: string;
-  component: ComponentType<any>;
+  component: ComponentType;
   layout?: ComponentType<any> | null;
 }
 
@@ -22,17 +22,8 @@ function App(): ReactElement {
             } else if (route.layout === null) {
               Layout = React.Fragment;
             }
-            return (
-              <Route
-                key={index}
-                path={route.path}
-                element={
-                  <Layout>
-                    <Page />
-                  </Layout>
-                }
-              />
-            );
+
+            return <Route key={index} path={route.path} element={<Layout>{<Page />}</Layout>} />;
           })}
         </Routes>
       </div>

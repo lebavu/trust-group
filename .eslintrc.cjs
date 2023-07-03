@@ -47,5 +47,14 @@ module.exports = {
     "react/react-in-jsx-scope": "off",
     semi: "off",
     "import/no-unresolved": "off",
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        extendDefaults: true,
+        types: {
+          "{}": false,
+        },
+      },
+    ],
   },
 };

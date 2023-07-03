@@ -148,7 +148,7 @@ const BranchComponent: React.FC = () => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
 
