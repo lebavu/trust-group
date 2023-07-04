@@ -108,22 +108,6 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
           <List>
             <ListItem disablePadding>
               <ListItemButton>
-                <NavLink className='flex w-full items-center gap-3' to={config.routes.Blogs}>
-                  <ListItemIcon
-                    sx={{
-                      flexShrink: 0,
-                      minWidth: "3rem",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <ArchiveIcon />
-                  </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
-                </NavLink>
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton>
                 <NavLink className='flex w-full items-center gap-3' to={config.routes.Branches}>
                   <ListItemIcon
                     sx={{
@@ -167,6 +151,22 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                     <ArchiveIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation' />
+                </NavLink>
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton>
+                <NavLink className='flex w-full items-center gap-3' to={config.routes.Blogs}>
+                  <ListItemIcon
+                    sx={{
+                      flexShrink: 0,
+                      minWidth: "3rem",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <ArchiveIcon />
+                  </ListItemIcon>
+                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
                 </NavLink>
               </ListItemButton>
             </ListItem>

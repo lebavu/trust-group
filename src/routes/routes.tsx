@@ -21,6 +21,7 @@ import MyAccount from "@/pages/MyAccount";
 interface Route {
   path: string;
   component: React.ComponentType<any>;
+  layout?: React.ComponentType<any> | null;
 }
 
 // Public routes
@@ -38,7 +39,7 @@ const publicRoutes: Route[] = [
   { path: config.routes.Roles, component: Roles },
   { path: config.routes.Stories, component: Stories },
   { path: config.routes.Users, component: Users },
-  { path: config.routes.Login, component: Login },
+  { path: config.routes.Login, component: Login, layout: null },
   { path: config.routes.SignUp, component: SignUp },
   { path: config.routes.MyAccount, component: MyAccount },
 ];

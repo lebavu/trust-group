@@ -11,6 +11,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChartBar from "@/components/ChartBar";
 import styles from "./Home.module.scss";
 import classNames from "classnames/bind";
 const cx = classNames.bind(styles);
@@ -23,7 +24,7 @@ const Item = styled(Paper)(({ theme }) => ({
 export default function FullWidthGrid() {
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
+      <Grid container spacing={4}>
         <Grid item xs={12} md={8}>
           <Item>
             <Stack spacing={2} direction={{ xs: "column", sm: "row" }}>
@@ -91,6 +92,9 @@ export default function FullWidthGrid() {
             </Stack>
           </Item>
         </Grid>
+        <Grid item xs={12} md={8}>
+          <ChartBar />
+        </Grid>
         <Grid item xs={12} md={4}>
           <Item>
             <Typography marginBottom={3} variant='h3' component='div'>
@@ -124,9 +128,6 @@ export default function FullWidthGrid() {
               </AccordionSummary>
             </Accordion>
           </Item>
-        </Grid>
-        <Grid item xs={12} md={8}>
-          xs=6 md=8
         </Grid>
       </Grid>
     </Box>
