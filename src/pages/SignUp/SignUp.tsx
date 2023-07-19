@@ -1,125 +1,180 @@
-import React, { useState } from "react";
-import { TextField, Button, Typography, Container } from "@mui/material";
-import axios from "axios";
+import { Box, Container, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import { object, string, TypeOf } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import FormInput from "@/components/FormInput";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { LoadingButton as _LoadingButton } from "@mui/lab";
+import { toast } from "react-toastify";
+import { useMutation } from "react-query";
+import { signUpUserFn } from "@/api/auth.api";
 
-interface FormProps {
-  onSubmit: (data: FormData) => void;
-}
+const LoadingButton = styled(_LoadingButton)`
+  padding: 0.8rem 0;
+  background-color: #1e2f8d;
+  color: #fff;
+  font-weight: 500;
+  text-transform: none;
+  &:hover {
+    background-color: #1e2f8d;
+  }
+`;
 
-interface FormData {
-  name: string;
-  email: string;
-  roleId: string;
-  handphoneNumber: string;
-  password: string;
-}
+const LinkItem = styled(Link)`
+  text-decoration: none;
+  font-family: "Roboto, sans-serif!important";
+  color: #fff;
+  margin-left: .5rem;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
-const SignUpForm: React.FC<FormProps> = ({ onSubmit }) => {
-  const [formData, setFormData] = useState<FormData>({
-    name: "",
-    email: "",
-    roleId: "",
-    handphoneNumber: "",
-    password: "",
+const registerSchema = object({
+  name: string().min(1, "Full name is required").max(100),
+  email: string()
+    .min(1, "Email address is required")
+    .email("Email Address is invalid"),
+  role_id: string().min(1, "Role id is required").max(100),
+  handphone_number: string().min(1, "Handphone number is required").max(100),
+  password: string()
+    .min(1, "Password is required")
+    .min(6, "Password must be more than 8 characters")
+    .max(32, "Password must be less than 32 characters"),
+});
+export type RegisterInput = TypeOf<typeof registerSchema>;
+
+const RegisterPage = () => {
+  const navigate = useNavigate();
+
+  const methods = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await axios.post("/api/signup", formData);
-      // Handle successful sign-up
-      console.log("Sign-up successful:", response.data);
-      onSubmit(formData);
-      setFormData({
-        name: "",
-        email: "",
-        roleId: "",
-        handphoneNumber: "",
-        password: "",
-      });
-    } catch (error) {
-      // Handle sign-up error
-      console.error("Sign-up error:", error);
+  // 👇 Calling the Register Mutation
+  const { mutate, isLoading } = useMutation(
+    (userData: RegisterInput) => signUpUserFn(userData),
+    {
+      onSuccess(data) {
+        toast.success(data?.message);
+        navigate("/login");
+      },
+      onError(error: any) {
+        if (Array.isArray((error as any).response.data.error)) {
+          (error as any).response.data.error.forEach((el: any) =>
+            toast.error(el.message, {
+              position: "top-right",
+            })
+          );
+        } else {
+          toast.error((error as any).response.data.message, {
+            position: "top-right",
+          });
+        }
+      },
     }
+  );
+
+  const {
+    reset,
+    handleSubmit,
+    formState: { isSubmitSuccessful },
+  } = methods;
+
+  useEffect(() => {
+    if (isSubmitSuccessful) {
+      reset();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isSubmitSuccessful]);
+
+  const onSubmitHandler: SubmitHandler<RegisterInput> = (values) => {
+    // 👇 Execute the Mutation
+    mutate(values);
   };
 
   return (
-    <Container maxWidth='xs'>
-      <Typography variant='h2' align='center' gutterBottom>
-        SIGN UP
-      </Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label='Name'
-          variant='outlined'
-          type='text'
-          name='name'
-          value={formData.name}
-          onChange={handleChange}
-          required
-          size='small'
-          fullWidth
-          margin='normal'
-        />
-        <TextField
-          label='Email'
-          variant='outlined'
-          type='email'
-          name='email'
-          value={formData.email}
-          onChange={handleChange}
-          required
-          size='small'
-          fullWidth
-          margin='normal'
-        />
-        <TextField
-          label='Role ID'
-          variant='outlined'
-          type='text'
-          name='roleId'
-          value={formData.roleId}
-          onChange={handleChange}
-          required
-          size='small'
-          fullWidth
-          margin='normal'
-        />
-        <TextField
-          label='Handphone Number'
-          variant='outlined'
-          type='text'
-          name='handphoneNumber'
-          value={formData.handphoneNumber}
-          onChange={handleChange}
-          required
-          size='small'
-          fullWidth
-          margin='normal'
-        />
-        <TextField
-          label='Password'
-          variant='outlined'
-          type='password'
-          name='password'
-          value={formData.password}
-          onChange={handleChange}
-          required
-          size='small'
-          fullWidth
-          margin='normal'
-        />
-        <Button type='submit' size='large' variant='contained' color='primary' fullWidth sx={{ marginTop: "2rem" }}>
-          Sign Up
-        </Button>
-      </form>
+    <Container
+      maxWidth={false}
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+        backgroundColor: "#fff",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          flexDirection: "column",
+        }}
+      >
+        <Typography
+          textAlign="center"
+          component="h1"
+          sx={{
+            color: "#1e2f8d",
+            fontSize: { xs: "2rem", md: "3rem" },
+            fontWeight: 600,
+            mb: 2,
+            letterSpacing: 1,
+          }}
+        >
+          Welcome to Trust Group!
+        </Typography>
+        <Typography component="h2" sx={{ color: "#000", mb: 2 }}>
+          Sign Up To Get Started!
+        </Typography>
+
+        <FormProvider {...methods}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit(onSubmitHandler)}
+            noValidate
+            autoComplete="off"
+            maxWidth="50rem"
+            width="100%"
+            sx={{
+              background: "linear-gradient(190deg, rgba(30,47,141,1) 0%, rgba(91,180,96,1) 96%)",
+              px: { xs: "1rem", sm: "2rem" },
+              py: "3rem",
+              borderRadius: 2,
+            }}
+          >
+            <FormInput name="name" label="Full Name" />
+            <FormInput name="email" label="Email Address" type="email" />
+            <FormInput name="role_id" label="Role Id" />
+            <FormInput name="handphone_number" label="Handphone Number" />
+            <FormInput name="password" label="Password" type="password" />
+            <Typography sx={{ fontSize: "1.2rem", mb: "1rem", color: "#fff", display: "flex", textAlign: "center" }}>
+              Already have an account?{" "}
+              <LinkItem to="/login">
+
+                  Login Here
+
+              </LinkItem>
+            </Typography>
+
+            <LoadingButton
+              variant="contained"
+              sx={{ mt: 1 }}
+              fullWidth
+              disableElevation
+              type="submit"
+              loading={isLoading}
+            >
+              Sign Up
+            </LoadingButton>
+          </Box>
+        </FormProvider>
+      </Box>
     </Container>
   );
 };
 
-export default SignUpForm;
+export default RegisterPage;

@@ -1,7 +1,8 @@
-import { useState, useEffect, ReactNode } from "react";
-import axios from "axios";
+import { ReactNode, useState, ChangeEvent } from "react";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as yup from "yup";
 import {
   Button,
   TextField,
@@ -17,134 +18,108 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Typography,
   Pagination,
+  Skeleton,
 } from "@mui/material";
 
-interface Branch {
-  data: {
-    id: string;
-    name: string;
-    address: string;
-    image_url: string | File;
-  };
-}
+import { Branch } from "@/api/types";
+import { fetchBranches, createBranch, updateBranch, deleteBranch } from "@/api/branch.api";
 
+// Schema for validating the branch object
+const branchSchema = yup.object().shape({
+  name: yup.string().required("Name is required"),
+  address: yup.string().required("Address is required"),
+  image_url: yup
+    .mixed()
+    .test("fileType", "Invalid file type", function (value) {
+      if (!value) return true;
+      const validFormats = ["image/jpeg", "image/png"];
+      const fileType = (value as File).type;
+
+      return validFormats.includes(fileType);
+    })
+    .test("fileSize", "File size is too large", function (value) {
+      if (!value) return true;
+
+      const fileSizeInMB = (value as File).size / (1024 * 1024);
+      const maxSizeInMB = 20;
+      return fileSizeInMB <= maxSizeInMB;
+    })
+});
+
+// Function to render the image URL or file preview
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
-    return <img src={imageUrl} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />;
+    return <img src={imageUrl} alt="Branch" style={{ width: "5rem" }} />;
   } else if (imageUrl instanceof File) {
     const temporaryUrl = URL.createObjectURL(imageUrl);
-    return <img src={temporaryUrl} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />;
+    return <img src={temporaryUrl} alt="Branch" style={{ width: "5rem" }} />;
   } else {
     return null;
   }
 };
 
+// Main component for managing branches
 const BranchComponent: React.FC = () => {
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [newBranch, setNewBranch] = useState<Branch>({
-    data: {
-      id: "",
-      name: "",
-      address: "",
-      image_url: "",
+  const queryClient = useQueryClient();
+
+  const { data: branches = [] } = useQuery<Branch[]>("branches", fetchBranches);
+
+  const createBranchMutation = useMutation(createBranch, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("branches");
+      toast.success("Branch created successfully.");
+    },
+    onError: () => {
+      toast.error("Failed to create branch.");
     },
   });
+
+  const updateBranchMutation = useMutation(updateBranch, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("branches");
+      toast.success("Branch updated successfully.");
+    },
+    onError: () => {
+      toast.error("Failed to update branch.");
+    },
+  });
+
+  const deleteBranchMutation = useMutation(deleteBranch, {
+    onSuccess: () => {
+      queryClient.invalidateQueries("branches");
+      toast.success("Branch deleted successfully.");
+    },
+    onError: () => {
+      toast.error("Failed to delete branch.");
+    },
+  });
+
+  const [newBranch, setNewBranch] = useState<Branch>({
+    id: "",
+    name: "",
+    address: "",
+    image_url: "",
+  });
+
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [branchesPerPage] = useState(5);
+  const branchesPerPage = 5;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
-  useEffect(() => {
-    fetchBranches();
-  }, []);
 
-  const fetchBranches = async () => {
-    try {
-      const response = await axios.get("http://localhost:8888/trustGroup/public/api/branches");
-      setBranches(response.data.data);
-    } catch (error) {
-      toast.error("Failed to fetch branches.");
-    }
-  };
-
-  const createBranch = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("name", newBranch.data.name);
-      formData.append("address", newBranch.data.address);
-      formData.append("image", newBranch.data.image_url);
-      await axios.post("http://localhost:8888/trustGroup/public/api/branches", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-      await fetchBranches();
-      toast.success("Branch created successfully.");
-      setNewBranch({
-        data: {
-          id: "",
-          name: "",
-          address: "",
-          image_url: "",
-        },
-      });
-      setOpen(false);
-    } catch (error) {
-      toast.error("Failed to create branch.");
-    }
-  };
-
-  const updateBranch = async () => {
-    try {
-      const formData = new FormData();
-      formData.append("_method", "PUT");
-      formData.append("name", newBranch.data.name);
-      formData.append("address", newBranch.data.address);
-      formData.append("image", newBranch.data.image_url);
-
-      await axios.post(`http://localhost:8888/trustGroup/public/api/branches/${selectedBranch?.data.id}`, formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      await fetchBranches();
-      toast.success("Branch updated successfully.");
-      setSelectedBranch(null);
-      setOpen(false);
-    } catch (error) {
-      toast.error("Failed to update branch.");
-    }
-  };
-
-  const deleteBranch = async (branch: Branch | null) => {
-    try {
-      if (branch) {
-        await axios.delete(`http://localhost:8888/trustGroup/public/api/branches/${branch.data.id}`);
-        const updatedBranches = branches.filter((p) => p.data.id !== branch.data.id);
-        setBranches(updatedBranches);
-        toast.success("Branch deleted successfully.");
-      }
-      setDeleteConfirmationOpen(false);
-      setBranchToDelete(null);
-    } catch (error) {
-      toast.error("Failed to delete branch.");
-    }
-  };
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
     setNewBranch((prevNewBranch) => ({
-      data: {
-        ...prevNewBranch.data,
-        [event.target.name]: event.target.value,
-      },
+      ...prevNewBranch,
+      [name]: value,
     }));
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
   };
 
@@ -152,26 +127,30 @@ const BranchComponent: React.FC = () => {
     setCurrentPage(value);
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setNewBranch({
-        data: {
-          ...newBranch.data,
-          image_url: file,
-        },
-      });
+      setNewBranch((prevNewBranch) => ({
+        ...prevNewBranch,
+        image_url: prevNewBranch.image_url instanceof File ? prevNewBranch.image_url : file,
+      }));
+
+      if (selectedBranch) {
+        setSelectedBranch((prevSelectedBranch) => ({
+          ...(prevSelectedBranch as Branch),
+          image_url: prevSelectedBranch?.image_url instanceof File ? prevSelectedBranch.image_url : file,
+        }));
+      }
     }
   };
-
   const indexOfLastBranch = currentPage * branchesPerPage;
   const indexOfFirstBranch = indexOfLastBranch - branchesPerPage;
   const currentBranches = branches.slice(indexOfFirstBranch, indexOfLastBranch);
 
   const filteredBranches = currentBranches.filter((branch) => {
-    if (branch.data && branch.data.name) {
-      const nameMatch = branch.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      const addressMatch = branch.data.address.toLowerCase().includes(searchKeyword.toLowerCase());
+    if (branch && branch.name) {
+      const nameMatch = branch.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const addressMatch = branch.address.toLowerCase().includes(searchKeyword.toLowerCase());
       return nameMatch || addressMatch;
     }
     return false;
@@ -180,19 +159,19 @@ const BranchComponent: React.FC = () => {
   const totalPages = Math.ceil(branches.length / branchesPerPage);
 
   const openFormPopup = () => {
+    setSelectedBranch(null);
+    setNewBranch({
+      id: "",
+      name: "",
+      address: "",
+      image_url: "",
+    });
     setOpen(true);
   };
 
   const openEditFormPopup = (branch: Branch) => {
     setSelectedBranch(branch);
-    setNewBranch({
-      data: {
-        id: branch.data.id,
-        name: branch.data.name,
-        address: branch.data.address,
-        image_url: branch.data.image_url,
-      },
-    });
+    setNewBranch(branch);
     setOpen(true);
   };
 
@@ -211,18 +190,100 @@ const BranchComponent: React.FC = () => {
     setBranchToDelete(null);
   };
 
+  const handleCreateBranch = async () => {
+    try {
+      await branchSchema.validate(newBranch, { abortEarly: false });
+      createBranchMutation.mutate(newBranch);
+      setNewBranch({
+        id: "",
+        name: "",
+        address: "",
+        image_url: "",
+      });
+      setOpen(false);
+    } catch (err: any) {
+      const validationErrors: { [key: string]: string } = {};
+      if (yup.ValidationError.isError(err)) {
+        err.inner.forEach((e) => {
+          if (e.path) {
+            validationErrors[e.path] = e.message;
+          }
+        });
+      }
+      setNewBranch((prevNewBranch) => ({
+        ...prevNewBranch,
+        errors: validationErrors,
+      }));
+    }
+  };
+
+  const handleUpdateBranch = async () => {
+    try {
+      await branchSchema.validate(newBranch, { abortEarly: false });
+
+      const updatedBranch: Branch = {
+        id: selectedBranch?.id || "",
+        name: newBranch.name || selectedBranch?.name || "",
+        address: newBranch.address || selectedBranch?.address || "",
+        image_url: newBranch.image_url || selectedBranch?.image_url || "",
+      };
+
+      // Check if the image URL is not changed, use the current value
+      if (!newBranch.image_url) {
+        updatedBranch.image_url = selectedBranch?.image_url || "";
+      }
+
+      await updateBranchMutation.mutateAsync(updatedBranch);
+
+      setSelectedBranch(null);
+      setOpen(false);
+
+      setNewBranch({
+        id: "",
+        name: "",
+        address: "",
+        image_url: "",
+        errors: {},
+      });
+    } catch (err: any) {
+      const validationErrors: { [key: string]: string } = {};
+      if (yup.ValidationError.isError(err)) {
+        err.inner.forEach((e) => {
+          if (e.path) {
+            validationErrors[e.path] = e.message;
+          }
+        });
+      }
+      setNewBranch((prevNewBranch) => ({
+        ...prevNewBranch,
+        errors: validationErrors,
+      }));
+    }
+  };
+
+  const handleDeleteBranch = (branch: Branch | null) => {
+    if (branch) {
+      deleteBranchMutation.mutate(branch.id);
+    }
+    setDeleteConfirmationOpen(false);
+    setBranchToDelete(null);
+  };
+
   return (
     <div>
-      <div className='mb-10 flex items-center justify-between gap-3'>
+      <Typography variant="h3" mb={"3rem"}>
+        Branches List
+      </Typography>
+      <div className="mb-10 flex items-center justify-between gap-3">
         <TextField
-          label='Search'
-          size='small'
+          label="Search"
+          size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
-          variant='outlined'
+          variant="outlined"
           sx={{ marginBottom: "2rem" }}
         />
-        <Button variant='contained' color='primary' onClick={openFormPopup}>
+        <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create Branch
         </Button>
       </div>
@@ -230,87 +291,115 @@ const BranchComponent: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell sx={{ maxWidth: "30rem" }}>Image</TableCell>
-              <TableCell align='right'>Action</TableCell>
+              <TableCell>
+                {branches.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+              </TableCell>
+              <TableCell>
+                {branches.length > 0 ? "Address" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+              </TableCell>
+              <TableCell sx={{ maxWidth: "30rem" }}>
+                {branches.length > 0 ? "Image" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+              </TableCell>
+              <TableCell align="right">{branches.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredBranches.map((branch) => (
-              <TableRow key={branch.data.id}>
-                <TableCell>{branch.data.name}</TableCell>
-                <TableCell>{branch.data.address}</TableCell>
-                <TableCell className='max-w-[30rem] break-words'>{renderImageUrl(branch.data.image_url)}</TableCell>
-                <TableCell>
-                  <div className='flex flex-wrap items-center justify-end gap-5'>
-                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(branch)}>
-                      Edit
-                    </Button>
-                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(branch)}>
-                      Delete
-                    </Button>
-                  </div>
+            {filteredBranches.length > 0 ? (
+              filteredBranches.map((branch) => (
+                <TableRow key={branch.id}>
+                  <TableCell>{branch.name}</TableCell>
+                  <TableCell>{branch.address}</TableCell>
+                  <TableCell className="max-w-[30rem] break-words">{renderImageUrl(branch.image_url)}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center justify-end gap-5">
+                      <Button variant="contained" color="primary" onClick={() => openEditFormPopup(branch)}>
+                        Edit
+                      </Button>
+                      <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(branch)}>
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4}>
+                  {branches.length === 0 ? (
+                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                  ) : (
+                    <p className="text-[1.6rem] text-center">No branches found.</p>
+                  )}
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </TableContainer>
-      <Box mt={2} display='flex' justifyContent='center'>
+      <Box mt={2} display="flex" justifyContent="center">
         <Pagination
           count={totalPages}
           page={currentPage}
           onChange={handlePageChange}
-          color='primary'
+          color="primary"
           showFirstButton
           showLastButton
         />
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
-        <DialogTitle className='!pt-10'>{selectedBranch ? "Edit Branch" : "Create New Branch"}</DialogTitle>
-        <DialogContent className='flex w-full flex-col gap-y-10 !pt-6'>
+        <DialogTitle className="!pt-10">{selectedBranch ? "Edit Branch" : "Create New Branch"}</DialogTitle>
+        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
           <TextField
-            name='name'
-            label='Name'
-            value={newBranch.data.name}
+            name="name"
+            label="Name"
+            value={newBranch.name}
             onChange={handleInputChange}
-            variant='outlined'
+            variant="outlined"
+            size="small"
             fullWidth
+            error={!!newBranch.errors?.name}
+            helperText={newBranch.errors?.name}
             sx={{ marginBottom: "2rem" }}
           />
           <TextField
-            name='address'
-            label='Address'
-            value={newBranch.data.address}
+            name="address"
+            label="Address"
+            value={newBranch.address}
             onChange={handleInputChange}
-            variant='outlined'
+            variant="outlined"
             multiline
             rows={4}
             fullWidth
+            error={!!newBranch.errors?.address}
+            helperText={newBranch.errors?.address}
             sx={{ marginBottom: "2rem" }}
           />
-          {/* {selectedBranch && selectedBranch.data.image_url && (
-            <img src={selectedBranch.data.image_url} alt='Branch' style={{ width: "100%", marginBottom: "1rem" }} />
-          )} */}
-          <input type='file' onChange={handleFileChange} />
+          {selectedBranch && selectedBranch.image_url && (
+            <>
+              {renderImageUrl(selectedBranch.image_url)}
+              {newBranch.errors?.image_url && (
+                <div className="error-text">{newBranch.errors.image_url}</div>
+              )}
+            </>
+          )}
+          <input type="file" onChange={handleFileChange} />
         </DialogContent>
-        <DialogActions className='!p-10'>
+        <DialogActions className="!p-10">
           {selectedBranch ? (
             <>
-              <Button variant='contained' color='primary' onClick={updateBranch}>
+              <Button variant="contained" color="primary" onClick={handleUpdateBranch}>
                 Update
               </Button>
-              <Button variant='contained' color='secondary' onClick={closeFormPopup}>
+              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
                 Cancel
               </Button>
             </>
           ) : (
             <>
-              <Button variant='contained' color='primary' onClick={createBranch}>
+              <Button variant="contained" color="primary" onClick={handleCreateBranch}>
                 Create
               </Button>
-              <Button variant='contained' color='secondary' onClick={closeFormPopup}>
+              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
                 Cancel
               </Button>
             </>
@@ -323,10 +412,10 @@ const BranchComponent: React.FC = () => {
           <DialogContentText>Are you sure you want to delete this branch?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button variant='contained' color='secondary' onClick={() => deleteBranch(branchToDelete)}>
+          <Button variant="contained" color="secondary" onClick={() => handleDeleteBranch(branchToDelete)}>
             Delete
           </Button>
-          <Button variant='contained' color='primary' onClick={closeDeleteConfirmation}>
+          <Button variant="contained" color="primary" onClick={closeDeleteConfirmation}>
             Cancel
           </Button>
         </DialogActions>

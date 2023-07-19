@@ -16,8 +16,24 @@ import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { useAppStore } from "@/appStore";
-import { NavLink } from "react-router-dom";
+import { NavLink , useNavigate } from "react-router-dom";
 import config from "@/config";
+import { toast } from "react-toastify";
+// import { useState } from "react";
+import { LoadingButton as _LoadingButton } from "@mui/lab";
+import { useStateContext } from "@/context";
+import { useMutation } from "react-query";
+import { logoutUserFn } from "@/api/auth.api";
+
+const LoadingButton = styled(_LoadingButton)`
+  padding: 0.4rem;
+  color: #222;
+  font-weight: 500;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+`;
 
 const AppBar = styled(
   MuiAppBar,
@@ -78,7 +94,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   handleProfileMenuOpen,
 }) => {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-
   return (
     <Menu
       anchorEl={mobileMoreAnchorEl}
@@ -86,7 +101,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         vertical: "top",
         horizontal: "right",
       }}
-      id='primary-search-account-menu-mobile'
+      id="primary-search-account-menu-mobile"
       keepMounted
       transformOrigin={{
         vertical: "top",
@@ -96,16 +111,16 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       onClose={handleMobileMenuClose}
     >
       <MenuItem>
-        <IconButton size='large' aria-label='show 4 new mails' color='inherit'>
-          <Badge badgeContent={4} color='error'>
+        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+          <Badge badgeContent={4} color="error">
             <MailIcon />
           </Badge>
         </IconButton>
         <p>Messages</p>
       </MenuItem>
       <MenuItem>
-        <IconButton size='large' aria-label='show 17 new notifications' color='inherit'>
-          <Badge badgeContent={17} color='error'>
+        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+          <Badge badgeContent={17} color="error">
             <NotificationsIcon />
           </Badge>
         </IconButton>
@@ -113,11 +128,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       </MenuItem>
       <MenuItem onClick={handleProfileMenuOpen}>
         <IconButton
-          size='large'
-          aria-label='account of current user'
-          aria-controls='primary-search-account-menu'
-          aria-haspopup='true'
-          color='inherit'
+          size="large"
+          aria-label="account of current user"
+          aria-controls="primary-search-account-menu"
+          aria-haspopup="true"
+          color="inherit"
         >
           <AccountCircle />
         </IconButton>
@@ -133,6 +148,33 @@ export default function PrimarySearchAppBar() {
   const updateOpen = useAppStore((state) => state.updateOpen);
   const dopen = useAppStore((state) => state.dopen);
   const isMenuOpen = Boolean(anchorEl);
+  const navigate = useNavigate();
+  const stateContext = useStateContext();
+  const user = stateContext.state.authUser;
+  const { mutate: logoutUser, isLoading } = useMutation(
+    async () => await logoutUserFn(),
+    {
+      onSuccess: () => {
+        window.location.href = "/login";
+      },
+      onError: (error: any) => {
+        if (Array.isArray(error.response.data.error)) {
+          error.data.error.forEach((el: any) =>
+            toast.error(el.message, {
+              position: "top-right",
+            })
+          );
+        } else {
+          toast.error(error.response.data.message, {
+            position: "top-right",
+          });
+        }
+      },
+    }
+  );
+  const onLogoutHandler = async () => {
+    logoutUser();
+  };
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -168,20 +210,91 @@ export default function PrimarySearchAppBar() {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+      {user ? (
+        [
+          <MenuItem key="my-account" onClick={() => navigate("/my-account")}>
+            My account
+          </MenuItem>,
+          <MenuItem key="logout" onClick={onLogoutHandler}>
+            Logout
+          </MenuItem>,
+          <MenuItem key="change-password" onClick={() => navigate("/change-password")}>
+            Change Password
+          </MenuItem>,
+        ]
+      ) : (
+        [
+          <LoadingButton
+            key="signup"
+            sx={{ mr: 2 }}
+            onClick={() => navigate("/sign-up")}
+          >
+            SignUp
+          </LoadingButton>,
+          <LoadingButton key="login" loading={isLoading} onClick={() => navigate("/login")}>
+            Login
+          </LoadingButton>,
+        ]
+      )}
+      {/* {user && (
+        <>
+          <LoadingButton
+            loading={isLoading}
+            onClick={() => navigate("/profile")}
+          >
+            Profile
+          </LoadingButton>
+          <LoadingButton onClick={onLogoutHandler} loading={isLoading}>
+            Logout
+          </LoadingButton>
+        </>
+      )}
+      {!user && (
+        <>
+          <LoadingButton
+            sx={{ mr: 2 }}
+            onClick={() => navigate("/sign-up")}
+          >
+            SignUp
+          </LoadingButton>
+          <LoadingButton onClick={() => navigate("/login")}>
+            Login
+          </LoadingButton>
+        </>
+      )}
+      {user && (
+        <>
+          <LoadingButton
+            loading={isLoading}
+            onClick={() => navigate("/profile")}
+          >
+            Profile
+          </LoadingButton>
+          <LoadingButton onClick={onLogoutHandler} loading={isLoading}>
+            Logout
+          </LoadingButton>
+        </>
+      )}
+      {user && user?.role_id === "1" && (
+        <LoadingButton
+          sx={{ ml: 2 }}
+          onClick={() => navigate("/admin")}
+        >
+          Admin
+        </LoadingButton>
+      )} */}
     </Menu>
   );
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position='fixed'>
+      <AppBar position="fixed">
         <Toolbar>
           <IconButton
-            size='large'
-            edge='start'
-            color='inherit'
-            aria-label='open drawer'
+            size="large"
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
             sx={{ mr: 2 }}
             onClick={() => updateOpen(!dopen)}
           >
@@ -190,9 +303,9 @@ export default function PrimarySearchAppBar() {
 
           <NavLink to={config.routes.Home}>
             <Typography
-              variant='h6'
+              variant="h6"
               noWrap
-              component='div'
+              component="div"
               sx={{
                 display: { xs: "none", sm: "block" },
                 fontWeight: "bold",
@@ -207,40 +320,40 @@ export default function PrimarySearchAppBar() {
             <SearchIconWrapper>
               <SearchIcon />
             </SearchIconWrapper>
-            <StyledInputBase placeholder='Search…' inputProps={{ "aria-label": "search" }} />
+            <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
-            <IconButton size='large' aria-label='show 4 new mails' color='inherit'>
-              <Badge badgeContent={4} color='error'>
+            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
+              <Badge badgeContent={4} color="error">
                 <MailIcon />
               </Badge>
             </IconButton>
-            <IconButton size='large' aria-label='show 17 new notifications' color='inherit'>
-              <Badge badgeContent={17} color='error'>
+            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+              <Badge badgeContent={17} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
             <IconButton
-              size='large'
-              edge='end'
-              aria-label='account of current user'
+              size="large"
+              edge="end"
+              aria-label="account of current user"
               aria-controls={menuId}
-              aria-haspopup='true'
+              aria-haspopup="true"
               onClick={handleProfileMenuOpen}
-              color='inherit'
+              color="inherit"
             >
               <AccountCircle />
             </IconButton>
           </Box>
           <Box sx={{ display: { xs: "flex", md: "none" } }}>
             <IconButton
-              size='large'
-              aria-label='show more'
-              aria-controls='primary-search-account-menu-mobile'
-              aria-haspopup='true'
+              size="large"
+              aria-label="show more"
+              aria-controls="primary-search-account-menu-mobile"
+              aria-haspopup="true"
               onClick={handleMobileMenuOpen}
-              color='inherit'
+              color="inherit"
             >
               <MoreIcon />
             </IconButton>

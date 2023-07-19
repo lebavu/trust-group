@@ -15,6 +15,8 @@ const routes = {
   Login: "/login",
   SignUp: "/sign-up",
   MyAccount: "/my-account",
+  ForgotPassword: "/forgot-password",
+  VerifiedCodeForgot: "/verified-code-forgot"
 };
 
 export default routes;

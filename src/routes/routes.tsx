@@ -14,9 +14,11 @@ import Projects from "@/pages/Projects";
 import Roles from "@/pages/Roles";
 import Stories from "@/pages/Stories";
 import Users from "@/pages/Users";
-import Login from "@/pages/Login";
-import SignUp from "@/pages/SignUp";
+import Login from "@/pages/Login/Login";
+import SignUp from "@/pages/SignUp/SignUp";
 import MyAccount from "@/pages/MyAccount";
+import ForgotPassword from "@/pages/ForgotPassword";
+import VerifiedCodeForgot from "@/pages/VerifiedCodeForgot";
 
 interface Route {
   path: string;
@@ -40,8 +42,10 @@ const publicRoutes: Route[] = [
   { path: config.routes.Stories, component: Stories },
   { path: config.routes.Users, component: Users },
   { path: config.routes.Login, component: Login, layout: null },
-  { path: config.routes.SignUp, component: SignUp },
+  { path: config.routes.SignUp, component: SignUp, layout: null },
   { path: config.routes.MyAccount, component: MyAccount },
+  { path: config.routes.ForgotPassword, component: ForgotPassword, layout: null },
+  { path: config.routes.VerifiedCodeForgot, component: VerifiedCodeForgot, layout: null },
 ];
 
 const privateRoutes: Route[] = [];

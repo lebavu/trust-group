@@ -5,28 +5,19 @@ import "react-toastify/dist/ReactToastify.css";
 import {
   Button,
   TextField,
-  Box,
-  Table,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Pagination,
 } from "@mui/material";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 interface EValuationCategory {
-  data: {
-    id: string;
-    name: string;
-    desc: string;
-    parent: string;
-  };
+  id: string;
+  name: string;
+  desc: string;
+  parent: string;
 }
 
 const EValuationCategoriesComponent: React.FC = () => {
@@ -39,10 +30,8 @@ const EValuationCategoriesComponent: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<EValuationCategory | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [categoriesPerPage] = useState(5);
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
-  const [categoryToDelete, setCategoryToDelete] = useState<{ data: { id: string } } | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<EValuationCategory | null>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -50,78 +39,12 @@ const EValuationCategoriesComponent: React.FC = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get("http://localhost:8888/trustGroup/public/api/e-valuation-categories");
-      setCategories(response.data.data);
-    } catch (error) {
-      toast.error("Failed to fetch branches.");
-    }
-  };
-
-  const createCategory = async () => {
-    try {
-      await axios.post("http://localhost:8888/trustGroup/public/api/e-valuation-categories", {
-        name: newCategory.name,
-        desc: newCategory.desc,
-        parent: newCategory.parent,
-      });
-      await fetchCategories();
-      toast.success("Category created successfully.");
-      setNewCategory({
-        name: "",
-        desc: "",
-        parent: "",
-      });
-      setOpen(false);
-    } catch (error) {
-      toast.error("Failed to create category.");
-    }
-  };
-
-  const updateCategory = async () => {
-    try {
-      await axios.put(
-        `http://localhost:8888/trustGroup/public/api/e-valuation-categories/${selectedCategory?.data.id}`,
-        {
-          name: newCategory.name,
-          desc: newCategory.desc,
-          parent: newCategory.parent,
-        },
+      const response = await axios.get(
+        "https://pm55.corsivalab.xyz/trustGroup/public/api/e-valuation-categories"
       );
-
-      setCategories((prevCategories) =>
-        prevCategories.map((category) =>
-          category.data.id === selectedCategory?.data.id
-            ? { ...category, data: { ...category.data, ...newCategory } }
-            : category,
-        ),
-      );
-
-      toast.success("Category updated successfully.");
-      setSelectedCategory(null);
-      setOpen(false);
-      setNewCategory({
-        name: "",
-        desc: "",
-        parent: "",
-      });
+      setCategories(response.data);
     } catch (error) {
-      toast.error("Failed to update category.");
-    }
-  };
-
-  const deleteCategory = async (category: { data: { id: string } } | null) => {
-    if (!category) {
-      return;
-    }
-    try {
-      await axios.delete(`http://localhost:8888/trustGroup/public/api/e-valuation-categories/${category.data.id}`);
-      const updatedCategories = categories.filter((p) => p.data.id !== category.data.id);
-      setCategories(updatedCategories);
-      toast.success("Category deleted successfully.");
-      setDeleteConfirmationOpen(false);
-      setCategoryToDelete(null);
-    } catch (error) {
-      toast.error("Failed to delete category.");
+      toast.error("Failed to fetch categories.");
     }
   };
 
@@ -136,35 +59,17 @@ const EValuationCategoriesComponent: React.FC = () => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setCurrentPage(value);
-  };
-
-  const indexOfLastCategory = currentPage * categoriesPerPage;
-  const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
-  const currentCategories = categories.slice(indexOfFirstCategory, indexOfLastCategory);
-
-  const filteredCategories = currentCategories.filter((category) => {
-    if (category.data && category.data.name) {
-      const nameMatch = category.data.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      const descMatch = category.data.desc.toLowerCase().includes(searchKeyword.toLowerCase());
-      return nameMatch || descMatch;
-    }
-    return false;
-  });
-
-  const totalPages = Math.ceil(categories.length / categoriesPerPage);
-
   const openFormPopup = () => {
+    setSelectedCategory(null);
     setOpen(true);
   };
 
   const openEditFormPopup = (category: EValuationCategory) => {
     setSelectedCategory(category);
     setNewCategory({
-      name: category.data.name,
-      desc: category.data.desc,
-      parent: category.data.parent,
+      name: category.name,
+      desc: category.desc,
+      parent: category.parent,
     });
     setOpen(true);
   };
@@ -175,93 +80,158 @@ const EValuationCategoriesComponent: React.FC = () => {
   };
 
   const openDeleteConfirmation = (category: EValuationCategory) => {
-    setDeleteConfirmationOpen(true);
     setCategoryToDelete(category);
+    setDeleteConfirmationOpen(true);
   };
 
   const closeDeleteConfirmation = () => {
-    setDeleteConfirmationOpen(false);
     setCategoryToDelete(null);
+    setDeleteConfirmationOpen(false);
   };
+
+  const createCategory = async () => {
+    try {
+      await axios.post("https://pm55.corsivalab.xyz/trustGroup/public/api/e-valuation-categories", {
+        name: newCategory.name,
+        desc: newCategory.desc,
+        parent: newCategory.parent,
+      });
+      fetchCategories();
+      toast.success("Category created successfully.");
+      setNewCategory({ name: "", desc: "", parent: "" });
+      setOpen(false);
+    } catch (error) {
+      toast.error("Failed to create category.");
+    }
+  };
+
+  const updateCategory = async () => {
+    try {
+      if (!selectedCategory) return;
+      await axios.put(
+        `https://pm55.corsivalab.xyz/trustGroup/public/api/e-valuation-categories/${selectedCategory.id}`,
+        {
+          name: newCategory.name,
+          desc: newCategory.desc,
+          parent: newCategory.parent,
+        }
+      );
+
+      setCategories((prevCategories) =>
+        prevCategories.map((category) =>
+          category.id === selectedCategory.id
+            ? { ...category, name: newCategory.name, desc: newCategory.desc, parent: newCategory.parent }
+            : category
+        )
+      );
+
+      toast.success("Category updated successfully.");
+      setSelectedCategory(null);
+      setOpen(false);
+      setNewCategory({ name: "", desc: "", parent: "" });
+    } catch (error) {
+      toast.error("Failed to update category.");
+    }
+  };
+
+  const deleteCategory = async (category: EValuationCategory | null) => {
+    if (!category) return;
+    try {
+      await axios.delete(
+        `https://pm55.corsivalab.xyz/trustGroup/public/api/e-valuation-categories/${category.id}`
+      );
+      const updatedCategories = categories.filter((c) => c.id !== category.id);
+      setCategories(updatedCategories);
+      toast.success("Category deleted successfully.");
+      setDeleteConfirmationOpen(false);
+      setCategoryToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete category.");
+    }
+  };
+
+  const filteredCategories = categories.filter((category) => {
+    if (category.name && category.desc) {
+      const nameMatch = category.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      const descMatch = category.desc.toLowerCase().includes(searchKeyword.toLowerCase());
+      return nameMatch || descMatch;
+    }
+    return false;
+  });
+
+  const columns = [
+    { field: "name", headerName: "Name", flex: 1 },
+    { field: "desc", headerName: "Description", flex: 1 },
+    { field: "parent", headerName: "Parent", flex: 1 },
+    {
+      field: "actions",
+      headerName: "Actions",
+      flex: 1,
+      renderCell: (params: { row: EValuationCategory }) => (
+        <div className="flex flex-wrap items-center justify-end gap-5">
+          <Button variant="contained" color="primary" onClick={() => openEditFormPopup(params.row)}>
+            Edit
+          </Button>
+          <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(params.row)}>
+            Delete
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div>
-      <div className='mb-10 flex items-center justify-between gap-3'>
-        <TextField label='Search' size='small' value={searchKeyword} onChange={handleSearchChange} variant='outlined' />
-        <Button variant='contained' color='primary' onClick={openFormPopup}>
+      <div className="mb-10 flex items-center justify-between gap-3">
+        <TextField
+          label="Search"
+          size="small"
+          value={searchKeyword}
+          onChange={handleSearchChange}
+          variant="outlined"
+        />
+        <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create Category
         </Button>
       </div>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>Parent</TableCell>
-              <TableCell align='right'>Action</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredCategories.map((category) => (
-              <TableRow key={category.data.id}>
-                <TableCell>{category.data.name}</TableCell>
-                <TableCell>{category.data.desc}</TableCell>
-                <TableCell>{category.data.parent}</TableCell>
-                <TableCell>
-                  <div className='flex flex-wrap items-center justify-end gap-5'>
-                    <Button variant='contained' color='primary' onClick={() => openEditFormPopup(category)}>
-                      Edit
-                    </Button>
-                    <Button variant='contained' color='secondary' onClick={() => openDeleteConfirmation(category)}>
-                      Delete
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Box mt={2} display='flex' justifyContent='center'>
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
-          color='primary'
-          showFirstButton
-          showLastButton
+      <div style={{ height: 400, width: "100%" }}>
+        <DataGrid
+          rows={filteredCategories}
+          columns={columns}
+          components={{
+            Toolbar: GridToolbar,
+          }}
         />
-      </Box>
+      </div>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
         <DialogTitle>{selectedCategory ? "Edit Category" : "Create New Category"}</DialogTitle>
         <DialogContent>
           <TextField
-            name='name'
-            label='Name'
+            name="name"
+            label="Name"
             value={newCategory.name}
             onChange={handleInputChange}
-            variant='outlined'
+            variant="outlined"
             fullWidth
-            margin='normal'
+            margin="normal"
           />
           <TextField
-            name='desc'
-            label='Description'
+            name="desc"
+            label="Description"
             value={newCategory.desc}
             onChange={handleInputChange}
-            variant='outlined'
+            variant="outlined"
             fullWidth
-            margin='normal'
+            margin="normal"
           />
           <TextField
-            name='parent'
-            label='Parent'
-            value={newCategory.parent || ""}
+            name="parent"
+            label="Parent"
+            value={newCategory.parent}
             onChange={handleInputChange}
-            variant='outlined'
+            variant="outlined"
             fullWidth
-            margin='normal'
+            margin="normal"
           />
         </DialogContent>
         <DialogActions>
@@ -281,13 +251,13 @@ const EValuationCategoriesComponent: React.FC = () => {
           <DialogContentText>Are you sure you want to delete this category?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => deleteCategory(categoryToDelete)} color='error'>
+          <Button onClick={() => deleteCategory(categoryToDelete)} color="error">
             Delete
           </Button>
           <Button onClick={closeDeleteConfirmation}>Cancel</Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer position='top-right' autoClose={3000} hideProgressBar />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar />
     </div>
   );
 };

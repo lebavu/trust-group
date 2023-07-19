@@ -11,6 +11,13 @@ import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import LinkIcon from "@mui/icons-material/Link";
+import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
+import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
+import WebStoriesIcon from "@mui/icons-material/WebStories";
+import ArticleIcon from "@mui/icons-material/Article";
+import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import CategoryIcon from "@mui/icons-material/Category";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -116,7 +123,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <LinkIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Branches' />
                 </NavLink>
@@ -132,7 +139,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <CategoryIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation Categories' />
                 </NavLink>
@@ -164,7 +171,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <ArticleIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
                 </NavLink>
@@ -196,7 +203,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <ConfirmationNumberIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Pawn Tickets' />
                 </NavLink>
@@ -212,7 +219,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <CategoryIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Product Categories' />
                 </NavLink>
@@ -260,7 +267,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <SupervisorAccountIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Roles' />
                 </NavLink>
@@ -276,7 +283,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <WebStoriesIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Stories' />
                 </NavLink>
@@ -292,7 +299,7 @@ export default function DefaultLayout({ children }: { children: ReactNode }) {
                       justifyContent: "center",
                     }}
                   >
-                    <ArchiveIcon />
+                    <AccountBoxIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Users' />
                 </NavLink>
