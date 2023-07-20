@@ -11,10 +11,10 @@ export const authApi = axios.create({
 });
 
 authApi.defaults.headers.common["Content-Type"] = "application/json";
-// const token = localStorage.getItem("token");
-// if (token) {
-//   authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-// }
+const token = localStorage.getItem("token");
+if (token) {
+  authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+}
 // export const refreshAccessTokenFn = async () => {
 //   const response = await authApi.get<ILoginResponse>("refresh");
 //   return response.data;
@@ -65,8 +65,8 @@ export const signUpUserFn = async (user: RegisterInput) => {
 
 export const loginUserFn = async (user: LoginInput) => {
   const response = await authApi.post<ILoginResponse>("login", user);
-  // const accessToken = response.data.token;
-  // localStorage.setItem("token", accessToken);
+  const accessToken = response.data.token;
+  localStorage.setItem("token", accessToken);
   return response.data;
 };
 
@@ -95,3 +95,8 @@ export const forgotPasswordFn = async () => {
 //   const response = await authApi.patch<GenericResponse>(`auth/resetpassword/${resetCode}`, data);
 //   return response.data;
 // };
+
+
+
+
+

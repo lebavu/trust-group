@@ -86,3 +86,15 @@ export interface User {
     verified_code_forgot?: string;
   };
 }
+
+export interface PawnTickets {
+  id: string;
+  user_id: string;
+  date_time: Date;
+  details: string;
+  errors?: {
+    user_id?: string;
+    date_time?: string;
+    details?: string;
+  };
+}
