@@ -161,8 +161,8 @@ const LoginPage = () => {
               borderRadius: 2,
             }}
           >
-            <FormInput name="email" label="Email Address" type="email" />
-            <FormInput name="password" label="Password" type="password" />
+            <FormInput name="email" label="Email Address" type="email" placeholder="Enter your email"/>
+            <FormInput name="password" label="Password" type="password" placeholder="Enter your password"/>
 
             <Typography
               sx={{ fontSize: "1.2rem", mb: "1rem", color: "#fff", display: "flex", textAlign: "center", justifyContent: "flex-end" }}

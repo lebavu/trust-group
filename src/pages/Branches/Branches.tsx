@@ -21,8 +21,9 @@ import {
   Typography,
   Pagination,
   Skeleton,
+  InputAdornment
 } from "@mui/material";
-
+import { Search } from "@mui/icons-material";
 import { Branch } from "@/api/types";
 import { fetchBranches, createBranch, updateBranch, deleteBranch } from "@/api/branch.api";
 
@@ -282,6 +283,13 @@ const BranchComponent: React.FC = () => {
           onChange={handleSearchChange}
           variant="outlined"
           sx={{ marginBottom: "2rem" }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position='end'>
+                <Search />
+              </InputAdornment>
+            )
+          }}
         />
         <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create Branch

@@ -146,11 +146,11 @@ const RegisterPage = () => {
               borderRadius: 2,
             }}
           >
-            <FormInput name="name" label="Full Name" />
-            <FormInput name="email" label="Email Address" type="email" />
-            <FormInput name="role_id" label="Role Id" />
-            <FormInput name="handphone_number" label="Handphone Number" />
-            <FormInput name="password" label="Password" type="password" />
+            <FormInput name="name" label="Full Name" placeholder="Enter your full name"/>
+            <FormInput name="email" label="Email Address" type="email" placeholder="Enter you email"/>
+            <FormInput name="role_id" label="Role Id" placeholder="Enter your role id"/>
+            <FormInput name="handphone_number" label="Handphone Number" placeholder="Enter your phone"/>
+            <FormInput name="password" label="Password" type="password" placeholder="Enter your password"/>
             <Typography sx={{ fontSize: "1.2rem", mb: "1rem", color: "#fff", display: "flex", textAlign: "center" }}>
               Already have an account?{" "}
               <LinkItem to="/login">

@@ -21,8 +21,9 @@ import {
   Typography,
   Pagination,
   Skeleton,
+  InputAdornment
 } from "@mui/material";
-
+import { Search } from '@mui/icons-material'
 import { User } from "@/api/types";
 import { fetchUsers, createUser, updateUser, deleteUser } from "@/api/user.api";
 
@@ -161,7 +162,8 @@ const UserComponent: React.FC = () => {
   const filteredUsers = currentUsers.filter((user) => {
     if (user && user.name) {
       const nameMatch = user.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      return nameMatch;
+      const addressMatch = user.email.toLowerCase().includes(searchKeyword.toLowerCase());
+      return nameMatch || addressMatch;
     }
     return false;
   });
@@ -266,8 +268,8 @@ const UserComponent: React.FC = () => {
         email: "",
         profile_image: "",
         handphone_number: "",
-        role_id: "",
         password: "",
+        role_id: "",
         verified_code_forgot: "",
         errors: {},
       });
@@ -308,6 +310,13 @@ const UserComponent: React.FC = () => {
           onChange={handleSearchChange}
           variant="outlined"
           sx={{ marginBottom: "2rem" }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position='end'>
+                <Search />
+              </InputAdornment>
+            )
+          }}
         />
         <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create User

@@ -69,5 +69,8 @@ a {
   &:hover,
   &.active {
     color: var(--primary)!important;
+    > div{
+      color: #1e2f8d!important;
+    }
   }
 }
