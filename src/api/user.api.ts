@@ -1,6 +1,5 @@
 import axios from "axios";
-import { User } from "./types";
-import { ILoginResponse } from "./types";
+import { User, ILoginResponse } from "./types";
 
 const BASE_URL = "https://pm55.corsivalab.xyz/trustGroup/public/api";
 
@@ -61,6 +60,7 @@ export async function createUser(user: User): Promise<void> {
   formData.append("email", user.email);
   formData.append("handphone_number", user.handphone_number);
   formData.append("profile_image", user.profile_image);
+  formData.append("password", user.password);
   formData.append("role_id", user.role_id);
 
   await authApi.post(`${BASE_URL}/users`, formData, {
@@ -76,6 +76,7 @@ export async function updateUser(user: User): Promise<void> {
   formData.append("name", user.name);
   formData.append("email", user.email);
   formData.append("handphone_number", user.handphone_number);
+  formData.append("password", user.password);
   formData.append("profile_image", user.profile_image);
   formData.append("role_id", user.role_id);
 

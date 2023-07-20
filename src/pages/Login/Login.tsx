@@ -68,6 +68,7 @@ const LoginPage = () => {
     {
       onSuccess: () => {
         query.refetch();
+        console.log(query);
         toast.success("You successfully logged in");
         navigate(from);
       },

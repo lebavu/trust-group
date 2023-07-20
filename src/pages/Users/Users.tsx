@@ -47,6 +47,12 @@ const userSchema = yup.object().shape({
     }),
   handphone_number: yup.string().required("Handphone Number is required"),
   role_id: yup.string().required("Role is required"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Password must be more than 6 characters")
+    .max(32, "Password must be less than 32 characters"),
+  verified_code_forgot: yup.string(),
 });
 
 // Function to render the image URL or file preview
@@ -104,6 +110,7 @@ const UserComponent: React.FC = () => {
     profile_image: "",
     handphone_number: "",
     role_id: "",
+    password: "",
     verified_code_forgot: ""
   });
 
@@ -171,6 +178,7 @@ const UserComponent: React.FC = () => {
       profile_image: "",
       handphone_number: "",
       role_id: "",
+      password: "",
       verified_code_forgot: ""
     });
     setOpen(true);
@@ -208,6 +216,7 @@ const UserComponent: React.FC = () => {
         profile_image: "",
         handphone_number: "",
         role_id: "",
+        password: "",
         verified_code_forgot: ""
       });
       setOpen(false);
@@ -236,7 +245,9 @@ const UserComponent: React.FC = () => {
         name: newUser.name || selectedUser?.name || "",
         email: newUser.email || selectedUser?.email || "",
         handphone_number: newUser.handphone_number || selectedUser?.handphone_number || "",
+        password: newUser.password || selectedUser?.password || "",
         role_id: newUser.role_id || selectedUser?.role_id || "",
+
         verified_code_forgot: newUser.verified_code_forgot || selectedUser?.verified_code_forgot || "",
         profile_image: newUser.profile_image || selectedUser?.profile_image || "",
       };
@@ -258,6 +269,7 @@ const UserComponent: React.FC = () => {
         profile_image: "",
         handphone_number: "",
         verified_code_forgot: "",
+        password: "",
         role_id: "",
         errors: {},
       });
@@ -419,6 +431,19 @@ const UserComponent: React.FC = () => {
             fullWidth
             error={!!newUser.errors?.role_id}
             helperText={newUser.errors?.role_id}
+            sx={{ marginBottom: "2rem" }}
+          />
+          <TextField
+            name="password"
+            label="Password"
+            size="small"
+            type="password"
+            value={newUser.password}
+            onChange={handleInputChange}
+            variant="outlined"
+            fullWidth
+            error={!!newUser.errors?.password}
+            helperText={newUser.errors?.password}
             sx={{ marginBottom: "2rem" }}
           />
 

@@ -74,6 +74,7 @@ export interface User {
   email: string;
   profile_image: string | File;
   role_id: string;
+  password: string;
   verified_code_forgot: string;
   errors?: {
     handphone_number?: string;
@@ -81,6 +82,7 @@ export interface User {
     email?: string;
     profile_image?: string;
     role_id?: string;
+    password?: string;
     verified_code_forgot?: string;
   };
 }
