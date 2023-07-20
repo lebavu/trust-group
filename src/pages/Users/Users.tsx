@@ -154,18 +154,18 @@ const UserComponent: React.FC = () => {
       }
     }
   };
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = users ? users.slice(indexOfFirstUser, indexOfLastUser) : [];
+  // const indexOfLastUser = currentPage * usersPerPage;
+  // const indexOfFirstUser = indexOfLastUser - usersPerPage;
+  // const currentUsers = users ? users.slice(indexOfFirstUser, indexOfLastUser) : [];
 
-  const filteredUsers = currentUsers.filter((user) => {
-    if (user && user.name) {
-      const nameMatch = user.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      const addressMatch = user.email.toLowerCase().includes(searchKeyword.toLowerCase());
-      return nameMatch || addressMatch;
-    }
-    return false;
-  });
+  // const filteredUsers = currentUsers.filter((user) => {
+  //   if (user && user.name) {
+  //     const nameMatch = user.name.toLowerCase().includes(searchKeyword.toLowerCase());
+  //     const addressMatch = user.email.toLowerCase().includes(searchKeyword.toLowerCase());
+  //     return nameMatch || addressMatch;
+  //   }
+  //   return false;
+  // });
 
   const totalPages = Math.ceil(users.length / usersPerPage);
 
@@ -184,21 +184,21 @@ const UserComponent: React.FC = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = (user: User) => {
-    setSelectedUser(user);
-    setNewUser(user);
-    setOpen(true);
-  };
+  // const openEditFormPopup = (user: User) => {
+  //   setSelectedUser(user);
+  //   setNewUser(user);
+  //   setOpen(true);
+  // };
 
   const closeFormPopup = () => {
     setSelectedUser(null);
     setOpen(false);
   };
 
-  const openDeleteConfirmation = (user: User) => {
-    setDeleteConfirmationOpen(true);
-    setUserToDelete(user);
-  };
+  // const openDeleteConfirmation = (user: User) => {
+  //   setDeleteConfirmationOpen(true);
+  //   setUserToDelete(user);
+  // };
 
   const closeDeleteConfirmation = () => {
     setDeleteConfirmationOpen(false);
