@@ -161,8 +161,7 @@ const UserComponent: React.FC = () => {
   const filteredUsers = currentUsers.filter((user) => {
     if (user && user.name) {
       const nameMatch = user.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      const addressMatch = user.email.toLowerCase().includes(searchKeyword.toLowerCase());
-      return nameMatch || addressMatch;
+      return nameMatch;
     }
     return false;
   });
