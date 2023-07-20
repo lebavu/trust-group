@@ -8,7 +8,7 @@
 @import "@fontsource/roboto/500.css";
 @import "@fontsource/roboto/700.css";
 :root {
-  --primary: #007fff;
+  --primary: #1e2f8d;
   --black: #000;
   --white: #fff;
   --text-color: #000;
@@ -68,6 +68,6 @@ a {
   text-decoration: none;
   &:hover,
   &.active {
-    color: var(--primary);
+    color: var(--primary)!important;
   }
 }

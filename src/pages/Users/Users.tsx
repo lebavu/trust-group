@@ -245,9 +245,8 @@ const UserComponent: React.FC = () => {
         name: newUser.name || selectedUser?.name || "",
         email: newUser.email || selectedUser?.email || "",
         handphone_number: newUser.handphone_number || selectedUser?.handphone_number || "",
-        password: newUser.password || selectedUser?.password || "",
         role_id: newUser.role_id || selectedUser?.role_id || "",
-
+        password: newUser.password || selectedUser?.password || "",
         verified_code_forgot: newUser.verified_code_forgot || selectedUser?.verified_code_forgot || "",
         profile_image: newUser.profile_image || selectedUser?.profile_image || "",
       };
@@ -268,9 +267,9 @@ const UserComponent: React.FC = () => {
         email: "",
         profile_image: "",
         handphone_number: "",
-        verified_code_forgot: "",
-        password: "",
         role_id: "",
+        password: "",
+        verified_code_forgot: "",
         errors: {},
       });
     } catch (err: any) {
@@ -344,8 +343,6 @@ const UserComponent: React.FC = () => {
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.handphone_number}</TableCell>
-                  <TableCell>{user.password}</TableCell>
-                  <TableCell>{user.verified_code_forgot}</TableCell>
                   <TableCell className="max-w-[30rem] break-words">{renderImageUrl(user.profile_image)}</TableCell>
                   <TableCell>{user.role_id}</TableCell>
                   <TableCell>

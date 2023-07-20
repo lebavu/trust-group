@@ -38,10 +38,10 @@ export interface UserRequest {
 
 export interface UserResponse {
   id: string;
-  handphone_number: string;
   name: string;
   email: string;
   profile_image: string;
+  handphone_number: string;
   role_id: string;
   verified_code_forgot: string;
   user: IUser;
@@ -77,10 +77,10 @@ export interface User {
   password: string;
   verified_code_forgot: string;
   errors?: {
-    handphone_number?: string;
     name?: string;
     email?: string;
     profile_image?: string;
+    handphone_number?: string;
     role_id?: string;
     password?: string;
     verified_code_forgot?: string;
