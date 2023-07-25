@@ -2,8 +2,10 @@ import { Link, useMatch } from "react-router-dom";
 import Typography from "@mui/material/Typography";
 
 export default function LoginHeader() {
-  const signUpMatch = useMatch("/sign-up");
-  const isSignUp = Boolean(signUpMatch);
+  const forgotPasswordMatch = useMatch("/forgot-password");
+  const resetPasswordMatch = useMatch("/reset-password");
+  const isforgotPassword = Boolean(forgotPasswordMatch);
+  const isresetPassword = Boolean(resetPasswordMatch);
   return (
     <header className='h-[64px] bg-[#1e2f8d] text-white flex items-center px-[24px]'>
       <div className='container'>
@@ -22,7 +24,7 @@ export default function LoginHeader() {
                 Trust Group
             </Typography>
           </Link>
-          <div className='ml-5 pl-5 text-xl lg:text-2xl border-0 border-l-[1px] border-white border-solid '>{isSignUp ? "Login" : "Sign Up"}</div>
+          <div className='ml-5 pl-5 text-xl lg:text-2xl border-0 border-l-[1px] border-white border-solid '>{isforgotPassword || isresetPassword  ? "Forgot Password" : "Login"}</div>
         </nav>
       </div>
     </header>

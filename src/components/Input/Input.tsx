@@ -18,7 +18,7 @@ export default function Input<TFieldValues extends FieldValues = FieldValues>({
   name,
   register,
   rules,
-  classNameInput = "h-[4.5rem] px-6 text-[1.4rem] w-full outline-none border border-gray-300 focus:border-gray-500 rounded-[.5rem] focus:shadow-sm",
+  classNameInput = "h-[4rem] px-6 text-[1.4rem] w-full outline-none border border-gray-300 focus:border-gray-500 rounded-[.5rem] focus:shadow-sm",
   classNameError = "mt-[1rem] text-red-600 min-h-[1.25rem] text-[1.2rem]",
   classNameEye = "absolute top-[8px] right-[1rem] h-5 w-5 cursor-pointer",
   ...rest

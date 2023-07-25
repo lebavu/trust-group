@@ -7,8 +7,8 @@ import { useMutation } from "react-query";
 import authApi from "@/api/auth.api";
 import { isAxiosUnprocessableEntityError } from "@/utils/utils";
 import { ErrorResponse } from "src/types/utils.type";
-import Input from "@/components/Input";
 import { AppContext } from "@/context/app.context";
+import Input from "@/components/Input";
 import Button from "src/components/Button";
 import { Helmet } from "react-helmet-async";
 import styled from "styled-components";
@@ -41,7 +41,6 @@ export default function Login() {
       setIsAuthenticated(true);
 
       try {
-        // Fetch user information after successful login
         const userInfo = await authApi.getInfoUser();
         setProfile(userInfo.data.data);
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
@@ -49,7 +48,6 @@ export default function Login() {
       } catch (error) {
         console.error("Error fetching user information:", error);
       }
-      // setProfile(userInfo.data.data);
       navigate("/");
     },
     onError: (error) => {
@@ -115,7 +113,7 @@ export default function Login() {
           <div className="mt-3">
             <Button
               type="submit"
-              className="flex bg-secondary leading-[4.5rem] h-[4.5rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-red-600"
+              className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-red-600"
               isLoading={loginMutation.isLoading}
               disabled={loginMutation.isLoading}
             >

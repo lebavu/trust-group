@@ -183,7 +183,7 @@ export default function PrimarySearchAppBar() {
               <Link to="/Profile" onClick={handleMenuClose}>
                 Profile
               </Link>
-            </MenuItem>,
+            </MenuItem>
             <MenuItem
               key="logout"
               onClick={() => {
@@ -192,19 +192,14 @@ export default function PrimarySearchAppBar() {
               }}
             >
               Logout
-            </MenuItem>,
-            <MenuItem key="change-password">
-              <Link to="/" onClick={handleMenuClose}>
-                Change Password
-              </Link>
-            </MenuItem>,
+            </MenuItem>
           </Menu>
         ]
       ) : (
         [
           <Button key="my-account" onClick={() => navigate("/login")}>
             Login
-          </Button>,
+          </Button>
         ]
       )}
     </div>

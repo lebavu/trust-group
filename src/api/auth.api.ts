@@ -1,4 +1,3 @@
-import { ForgotPassword } from '@/pages/ForgotPassword';
 import { AuthResponse } from "@/types/auth.type";
 import http from "@/utils/http";
 
