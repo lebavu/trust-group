@@ -16,7 +16,8 @@ const path = {
   SignUp: "/sign-up",
   Profile: "/profile",
   ForgotPassword: "/forgot-password",
-  ResetPassword: "/reset-password"
+  ResetPassword: "/reset-password",
+  NotFound: "/not-found"
 } as const;
 
 export default path;

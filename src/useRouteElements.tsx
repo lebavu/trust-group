@@ -206,15 +206,17 @@ export default function useRouteElements() {
             </Suspense>
           )
         },
-        {
-          path: "*",
-          element: (
-            <Suspense>
-              <NotFound />
-            </Suspense>
-          )
-        }
       ]
+    },
+    {
+      path: "*",
+      element: (
+        <NoneLayout>
+          <Suspense>
+            <NotFound />
+          </Suspense>
+        </NoneLayout>
+      )
     }
   ]);
   return routeElements;

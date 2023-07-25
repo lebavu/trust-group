@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { styled, alpha } from "@mui/material/styles";
 import { useContext } from "react";
 import MuiAppBar from "@mui/material/AppBar";
@@ -17,7 +17,6 @@ import SearchIcon from "@mui/icons-material/Search";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { useAppStore } from "@/appStore";
-import { Link } from "react-router-dom";
 import { AppContext } from "@/context/app.context";
 import { useMutation } from "react-query";
 import authApi from "@/api/auth.api";
@@ -237,7 +236,7 @@ export default function PrimarySearchAppBar() {
             <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
-          {isAuthenticated && userInfo && (
+          {userInfo && (
             <div>
               <Box sx={{ display: { xs: "none", md: "flex" } }}>
                 <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
