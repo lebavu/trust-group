@@ -6,7 +6,7 @@ import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
+import Button from "src/components/Button";
 import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
@@ -82,43 +82,44 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   handleProfileMenuOpen,
 }) => {
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+  const { isAuthenticated, userInfo } = useContext(AppContext);
   return (
-    <Menu
-      anchorEl={mobileMoreAnchorEl}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      id="primary-search-account-menu-mobile"
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isMobileMenuOpen}
-      onClose={handleMobileMenuClose}
-    >
-      <MenuItem>
-        <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-          <Badge badgeContent={17} color="error">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <p>Notifications</p>
-      </MenuItem>
-      <MenuItem onClick={handleProfileMenuOpen}>
-        <IconButton
-          size="large"
-          aria-label="account of current user"
-          aria-controls="primary-search-account-menu"
-          aria-haspopup="true"
-          color="inherit"
+    <div>
+      {isAuthenticated && userInfo && (
+        <Menu
+          anchorEl={mobileMoreAnchorEl}
+          anchorOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          id="primary-search-account-menu-mobile"
+          keepMounted
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "right",
+          }}
+          open={isMobileMenuOpen}
+          onClose={handleMobileMenuClose}
         >
-          <AccountCircle />
-        </IconButton>
-        <p>Profile</p>
-      </MenuItem>
-    </Menu>
+          <MenuItem>
+            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+              <Badge badgeContent={17} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <p>Notifications</p>
+          </MenuItem>
+          <MenuItem onClick={handleProfileMenuOpen}>
+            <div className="flex items-center gap-[1rem] pl-[12px]">
+              <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
+                <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
+              </div>
+              <span className="text-[1.4rem]">{userInfo.name}</span>
+            </div>
+          </MenuItem>
+        </Menu>
+      )}
+    </div>
   );
 };
 
@@ -127,8 +128,8 @@ export default function PrimarySearchAppBar() {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const updateOpen = useAppStore((state) => state.updateOpen);
   const dopen = useAppStore((state) => state.dopen);
-  const navigate = useNavigate();
   const isMenuOpen = Boolean(anchorEl);
+  const navigate = useNavigate();
   const { setIsAuthenticated, isAuthenticated, setProfile, userInfo } = useContext(AppContext);
   const logoutMutation = useMutation({
     mutationFn: authApi.logout,
@@ -161,7 +162,7 @@ export default function PrimarySearchAppBar() {
   const menuId = "primary-search-account-menu";
   const renderMenu = (
     <div>
-      {isAuthenticated ? (
+      {isAuthenticated && (
         [
           <Menu
             key="menu"
@@ -195,12 +196,6 @@ export default function PrimarySearchAppBar() {
             </MenuItem>
           </Menu>
         ]
-      ) : (
-        [
-          <Button key="my-account" onClick={() => navigate("/login")}>
-            Login
-          </Button>
-        ]
       )}
     </div>
   );
@@ -224,6 +219,7 @@ export default function PrimarySearchAppBar() {
             <Typography
               variant="h6"
               noWrap
+              className="logo-tr"
               component="div"
               sx={{
                 display: { xs: "none", sm: "block" },
@@ -242,43 +238,55 @@ export default function PrimarySearchAppBar() {
             <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
-          <Box sx={{ display: { xs: "none", md: "flex" } }}>
-            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            {isAuthenticated && userInfo && (
-              <IconButton
-                size="large"
-                edge="end"
-                aria-label="account of current user"
-                aria-controls={menuId}
-                aria-haspopup="true"
-                onClick={handleProfileMenuOpen}
-                color="inherit"
-              >
-                <div className="flex items-center gap-[1rem]">
-                  <span className="text-[1.4rem]">Welcome, {userInfo.name}</span>
-                  <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
-                    <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
+          {isAuthenticated && userInfo && (
+            <div>
+              <Box sx={{ display: { xs: "none", md: "flex" } }}>
+                <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
+                  <Badge badgeContent={17} color="error">
+                    <NotificationsIcon />
+                  </Badge>
+                </IconButton>
+                <IconButton
+                  size="large"
+                  edge="end"
+                  aria-label="account of current user"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={handleProfileMenuOpen}
+                  color="inherit"
+                >
+                  <div className="flex items-center gap-[1rem]">
+                    <span className="text-[1.4rem] font-medium">Welcome, {userInfo.name}</span>
+                    <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
+                      <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
+                    </div>
                   </div>
-                </div>
-              </IconButton>
-            )}
-          </Box>
-          <Box sx={{ display: { xs: "flex", md: "none" } }}>
-            <IconButton
-              size="large"
-              aria-label="show more"
-              aria-controls="primary-search-account-menu-mobile"
-              aria-haspopup="true"
-              onClick={handleMobileMenuOpen}
-              color="inherit"
-            >
-              <MoreIcon />
-            </IconButton>
-          </Box>
+                </IconButton>
+              </Box>
+              <Box sx={{ display: { xs: "flex", md: "none" } }}>
+                <IconButton
+                  size="large"
+                  aria-label="show more"
+                  aria-controls="primary-search-account-menu-mobile"
+                  aria-haspopup="true"
+                  onClick={handleMobileMenuOpen}
+                  color="inherit"
+                >
+                  <MoreIcon />
+                </IconButton>
+              </Box>
+            </div>
+          )}
+          {!isAuthenticated && (
+            <Box sx={{ display: { md: "flex" } }}>
+              <Button
+                onClick={() => navigate("/login")}
+                className="flex bg-secondary h-[3.5rem] h-[2.5rem] font-medium min-w-[8rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]"
+              >
+                Login
+              </Button>
+            </Box>
+          )}
         </Toolbar>
       </AppBar>
       <MobileMenu

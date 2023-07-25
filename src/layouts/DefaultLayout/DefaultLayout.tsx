@@ -75,6 +75,7 @@ const Drawer = styled(MuiDrawer, {
     left: 0,
     background: "#fff",
     zIndex: 99,
+    width: 0,
   },
   ...(open && {
     ...openedMixin(theme),

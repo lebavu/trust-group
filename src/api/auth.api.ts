@@ -7,6 +7,7 @@ export const URL_LOGOUT = "logout";
 export const URL_GETINFOUSER = "get-info-user";
 export const URL_REFRESH_TOKEN = "refresh-access-token";
 export const URL_FORGOTPASSWORD = "forgot-password";
+export const URL_RESETPASSWORD = "reset-password";
 
 const authApi = {
   registerAccount(body: { email: string; password: string }) {
@@ -23,6 +24,9 @@ const authApi = {
   },
   logout() {
     return http.get(URL_LOGOUT);
+  },
+  resetPassword(body: { email: string; verified_code_forgot: string, password: string }) {
+    return http.post(URL_RESETPASSWORD, body);
   }
 };
 

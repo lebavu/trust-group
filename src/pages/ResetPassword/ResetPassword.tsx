@@ -1,153 +1,130 @@
-import { useState } from "react";
-import { useFormik } from "formik";
-import { Box } from "@mui/material";
-import Button from "src/components/Button";
-import Input from "@/components/Input";
-import axios from "axios";
-import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useMutation } from "react-query";
+// Không có tính năng tree-shaking
+// import { omit } from "lodash"
+
+// Import chỉ mỗi function omit
+import omit from "lodash/omit";
+
+import { schema, Schema } from "src/utils/rules";
+import Input from "src/components/Input";
+import authApi from "src/api/auth.api";
+import { isAxiosUnprocessableEntityError } from "src/utils/utils";
+import { ErrorResponse } from "src/types/utils.type";
+import Button from "src/components/Button";
 import { Helmet } from "react-helmet-async";
 
-const ForgotPasswordForm = () => {
-  const [isEmailSent, setIsEmailSent] = useState(false);
-  const [emailError, setEmailError] = useState("");
-  const navigate = useNavigate();
+type FormData = Pick<Schema, "email" | "verified_code_forgot" | "password" | "confirm_password">;
+const registerSchema = schema.pick(["email", "verified_code_forgot", "password", "confirm_password"]);
 
-  const validationSchema = Yup.object({
-    email: Yup.string().required("Email is required"),
-    verificationCode: Yup.string().required("Verification code is required"),
-    password: Yup.string()
-      .required("Password is required")
-      .min(8, "Password must be more than 8 characters")
-      .max(32, "Password must be less than 32 characters"),
-    confirmPassword: Yup.string()
-      .oneOf([Yup.ref("password")], "Passwords do not match")
-      .required("Please confirm your password"),
+export default function Register() {
+  const navigate = useNavigate();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: yupResolver(registerSchema)
   });
-  const formik = useFormik({
-    initialValues: {
-      email: "",
-      verificationCode: "",
-      password: "",
-      confirmPassword: "",
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      try {
-        await axios.post(
-          "https://pm55.corsivalab.xyz/trustGroup/public/api/reset-password",
-          {
-            verificationCode: values.verificationCode,
-            password: values.password,
+  const resetPasswordMutation = useMutation({
+    mutationFn: (body: Omit<FormData, "confirm_password">) => authApi.resetPassword(body)
+  });
+  const onSubmit = handleSubmit((data) => {
+    const body = omit(data, ["confirm_password"]);
+    resetPasswordMutation.mutate(body, {
+      onSuccess: (data) => {
+        console.log(data);
+        navigate("/");
+      },
+      onError: (error) => {
+        if (isAxiosUnprocessableEntityError<ErrorResponse<Omit<FormData, "confirm_password">>>(error)) {
+          const formError = error.response?.data.data;
+          if (formError) {
+            Object.keys(formError).forEach((key) => {
+              setError(key as keyof Omit<FormData, "confirm_password">, {
+                message: formError[key as keyof Omit<FormData, "confirm_password">],
+                type: "Server"
+              });
+            });
           }
-        );
-        setIsEmailSent(true);
-        setEmailError("");
-        navigate("/login"); // Redirect to the login page after successful reset
-      } catch (error) {
-        console.error(error);
-        setEmailError("Error resetting password. Please try again later.");
+          // if (formError?.email) {
+          //   setError("email", {
+          //     message: formError.email,
+          //     type: "Server"
+          //   })
+          // }
+          // if (formError?.password) {
+          //   setError("password", {
+          //     message: formError.password,
+          //     type: "Server"
+          //   })
+          // }
+        }
       }
-    },
+    });
   });
 
   return (
     <div className="h-main">
       <Helmet>
-        <title>Forgot Password | Trust Group</title>
-        <meta name="description" content="Reset your password!" />
+        <title>Reset Password | Trust Group</title>
+        <meta name="description" content="Reset Password Trust Group" />
       </Helmet>
-      <Box className="max-w-[60rem] mx-auto">
-        <form
-          onSubmit={formik.handleSubmit}
-          className="rounded bg-slate-50 p-10 shadow-sm"
-        >
-          <div className="text-26 font-semibold mb-6 text-blue text-center">
-            Reset Password
-          </div>
+      <div className="max-w-[60rem] mx-auto">
+        <form className="rounded bg-slate-50 p-10 shadow-sm" onSubmit={onSubmit} noValidate>
+          <div className="text-26 font-semibold mb-6 text-blue text-center">Reset Password</div>
           <Input
             name="email"
-            id="email"
-            type="text"
-            className="mt-3"
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            placeholder="Enter verification code"
-            autoComplete="off"
-            errorMessage={
-              formik.touched.email && formik.errors.email
-                ? formik.errors.email
-                : undefined
-            }
+            register={register}
+            type="email"
+            className="mt-8"
+            errorMessage={errors.email?.message}
+            placeholder="Email"
           />
           <Input
-            name="verificationCode"
-            id="verificationCode"
+            name="verified_code_forgot"
+            register={register}
             type="text"
-            className="mt-3"
-            value={formik.values.verificationCode}
-            onChange={formik.handleChange}
-            placeholder="Enter verification code"
-            autoComplete="off"
-            errorMessage={
-              formik.touched.verificationCode && formik.errors.verificationCode
-                ? formik.errors.verificationCode
-                : undefined
-            }
+            className="mt-8"
+            errorMessage={errors.verified_code_forgot?.message}
+            placeholder="verified_code_forgot"
           />
           <Input
             name="password"
-            id="password"
+            register={register}
             type="password"
-            className="mt-3"
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            placeholder="Enter password"
-            autoComplete="new-password"
-            errorMessage={
-              formik.touched.password && formik.errors.password
-                ? formik.errors.password
-                : undefined
-            }
+            className="mt-2"
+            classNameEye="absolute right-[5px] h-5 w-5 cursor-pointer top-[12px]"
+            errorMessage={errors.password?.message}
+            placeholder="Password"
+            autoComplete="on"
           />
 
           <Input
-            name="confirmPassword"
-            id="confirmPassword"
+            name="confirm_password"
+            register={register}
             type="password"
-            className="mt-3"
-            value={formik.values.confirmPassword}
-            onChange={formik.handleChange}
-            placeholder="Confirm password"
-            autoComplete="new-password"
-            errorMessage={
-              formik.touched.confirmPassword &&
-              formik.errors.confirmPassword
-                ? formik.errors.confirmPassword
-                : undefined
-            }
+            className="mt-2"
+            classNameEye="absolute right-[5px] h-5 w-5 cursor-pointer top-[12px]"
+            errorMessage={errors.confirm_password?.message}
+            placeholder="Confirm Password"
+            autoComplete="on"
           />
 
-          <Button
-            className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]"
-            type="submit"
-            isLoading={formik.isSubmitting}
-            disabled={!formik.isValid || formik.isSubmitting}
-          >
-            Reset Password
-          </Button>
-
-          {emailError && <p>{emailError}</p>}
-          {isEmailSent && (
-            <p>
-              Your password has been successfully reset. Please proceed to
-              login with your new password.
-            </p>
-          )}
+          <div className="mt-2">
+            <Button
+              className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]"
+              isLoading={resetPasswordMutation.isLoading}
+              disabled={resetPasswordMutation.isLoading}
+            >
+              Reset Password
+            </Button>
+          </div>
         </form>
-      </Box>
+      </div>
     </div>
   );
-};
-
-export default ForgotPasswordForm;
+}

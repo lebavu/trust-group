@@ -67,6 +67,11 @@ const handleConfirmPasswordYup = (refString: string) => {
 };
 
 export const schema = yup.object({
+  verified_code_forgot: yup
+    .string()
+    .required("Email is required")
+    .min(5, "Length from 6 - 160 characters")
+    .max(160, "Length from 6 - 160 characters"),
   email: yup
     .string()
     .required("Email is required")
