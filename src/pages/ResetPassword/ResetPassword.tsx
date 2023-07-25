@@ -129,7 +129,7 @@ const ForgotPasswordForm = () => {
           />
 
           <Button
-            className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-red-600"
+            className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]"
             type="submit"
             isLoading={formik.isSubmitting}
             disabled={!formik.isValid || formik.isSubmitting}
