@@ -1,7 +1,7 @@
 import { useCookies } from "react-cookie";
 import { useQuery } from "react-query";
 import { getMeFn } from "@/api/auth.api";
-import { useStateContext } from "../context";
+import { useStateContext } from "../context/app.context";
 import FullScreenLoader from "../components/FullScreenLoader";
 import React from "react";
 

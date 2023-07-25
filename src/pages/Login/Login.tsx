@@ -1,199 +1,134 @@
-import { Box, Container, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
-import { object, string, TypeOf } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import FormInput from "@/components/FormInput";
-import { useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LoadingButton as _LoadingButton } from "@mui/lab";
-import { toast } from "react-toastify";
-import { useMutation, useQuery } from "react-query";
-import { getMeFn, loginUserFn } from "@/api/auth.api";
-import { useStateContext } from "@/context";
+import { useContext, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { schema, Schema } from "src/utils/rules";
+import { useMutation } from "react-query";
+import authApi from "@/api/auth.api";
+import { isAxiosUnprocessableEntityError } from "@/utils/utils";
+import { ErrorResponse } from "src/types/utils.type";
+import Input from "@/components/Input";
+import { AppContext } from "@/context/app.context";
+import Button from "src/components/Button";
+import { Helmet } from "react-helmet-async";
+import styled from "styled-components";
 
-const LoadingButton = styled(_LoadingButton)`
-  padding: 0.8rem 0;
-  background-color: #1e2f8d;
-  color: #fff;
-  font-weight: 500;
-  text-transform: none;
-  &:hover {
-    background-color: #1e2f8d;
-  }
-`;
-
-const LinkItem = styled(Link)`
-  text-decoration: none;
-  color: #fff;
-  margin-left: .5rem;
-  &:hover {
+const StyledLink = styled(Link)`
+  font-family: "Roboto";
+  color: #1e2f8d;
+  &:hover,&.active {
     text-decoration: underline;
   }
 `;
 
-const loginSchema = object({
-  email: string()
-    .min(1, "Email address is required")
-    .email("Email Address is invalid"),
-  password: string()
-    .min(1, "Password is required")
-    .min(6, "Password must be more than 8 characters")
-    .max(32, "Password must be less than 32 characters"),
-});
+type FormData = Pick<Schema, "email" | "password">;
+const loginSchema = schema.pick(["email", "password"]);
 
-export type LoginInput = TypeOf<typeof loginSchema>;
-
-const LoginPage = () => {
+export default function Login() {
+  const { setIsAuthenticated, setProfile } = useContext(AppContext);
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = ((location.state as any)?.from.pathname as string) || "/";
-
-  const methods = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
+  const {
+    register,
+    setError,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: yupResolver(loginSchema)
   });
-  const stateContext = useStateContext();
-  // API Get Current Logged-in user
-  const query = useQuery(["authUser"], getMeFn, {
-    enabled: false,
-    select: (data) => data.data.user,
-    retry: 1,
-    onSuccess: (data) => {
-      stateContext.dispatch({ type: "SET_USER", payload: data });
+
+  const loginMutation = useMutation(authApi.login, {
+    onSuccess: async () => {
+      setIsAuthenticated(true);
+
+      try {
+        // Fetch user information after successful login
+        const userInfo = await authApi.getInfoUser();
+        setProfile(userInfo.data.data);
+        localStorage.setItem("userInfo", JSON.stringify(userInfo));
+
+      } catch (error) {
+        console.error("Error fetching user information:", error);
+      }
+      // setProfile(userInfo.data.data);
+      navigate("/");
     },
-  });
-  const { mutate: loginUser, isLoading } = useMutation(
-    (userData: LoginInput) => loginUserFn(userData),
-    {
-      onSuccess: () => {
-        query.refetch();
-        console.log(query);
-        toast.success("You successfully logged in");
-        navigate(from);
-      },
-      onError: (error: any) => {
-        if (Array.isArray((error as any).response.data.error)) {
-          (error as any).response.data.error.forEach((el: any) =>
-            toast.error(el.message, {
-              position: "top-right",
-            })
-          );
-        } else {
-          toast.error((error as any).response.data.message, {
-            position: "top-right",
+    onError: (error) => {
+      if (isAxiosUnprocessableEntityError<ErrorResponse<FormData>>(error)) {
+        const formError = error.response?.data.data;
+        if (formError) {
+          Object.keys(formError).forEach((key) => {
+            setError(key as keyof FormData, {
+              message: formError[key as keyof FormData],
+              type: "Server",
+            });
           });
         }
-      },
+      }
     }
-  );
+  });
 
-  const {
-    reset,
-    handleSubmit,
-    formState: { isSubmitSuccessful },
-  } = methods;
+  const onSubmit = handleSubmit((data) => {
+    loginMutation.mutate(data);
+  });
 
   useEffect(() => {
-    if (isSubmitSuccessful) {
-      reset();
+    // Check if there is userInfo in localStorage
+    const storedUserInfo = localStorage.getItem("userInfo");
+    if (storedUserInfo) {
+      try {
+        const parsedUserInfo = JSON.parse(storedUserInfo);
+        setProfile(parsedUserInfo);
+      } catch (error) {
+        console.error("Error parsing user information from localStorage:", error);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isSubmitSuccessful]);
+  }, [setProfile]);
 
-  const onSubmitHandler: SubmitHandler<LoginInput> = (values) => {
-    // 👇 Executing the loginUser Mutation
-    loginUser(values);
-  };
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        minHeight: "100vh",
-        backgroundColor: "#fff",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          flexDirection: "column",
-        }}
-      >
-        <Typography
-          textAlign="center"
-          component="h1"
-          sx={{
-            color: "#1e2f8d",
-            fontWeight: 600,
-            fontSize: { xs: "2rem", md: "3rem" },
-            mb: 2,
-            letterSpacing: 1,
-          }}
-        >
-          Welcome Back!
-        </Typography>
-        <Typography
-          variant="body1"
-          component="h2"
-          sx={{ color: "#000", mb: 2 }}
-        >
-          Login to have access!
-        </Typography>
-
-        <FormProvider {...methods}>
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmitHandler)}
-            noValidate
-            autoComplete="off"
-            maxWidth="50rem"
-            width="100%"
-            sx={{
-              background: "linear-gradient(190deg, rgba(30,47,141,1) 0%, rgba(91,180,96,1) 96%)",
-              px: { xs: "1rem", sm: "2rem" },
-              py: "3rem",
-              borderRadius: 2,
-            }}
-          >
-            <FormInput name="email" label="Email Address" type="email" placeholder="Enter your email"/>
-            <FormInput name="password" label="Password" type="password" placeholder="Enter your password"/>
-
-            <Typography
-              sx={{ fontSize: "1.2rem", mb: "1rem", color: "#fff", display: "flex", textAlign: "center", justifyContent: "flex-end" }}
-            >
-              <LinkItem to="/forgot-password">
-                Forgot Password?
-              </LinkItem>
-            </Typography>
-
-            <LoadingButton
-              variant="contained"
-              sx={{ mt: 1 }}
-              fullWidth
-              disableElevation
+    <div className="h-main">
+      <Helmet>
+        <title>Login | Trust Group</title>
+        <meta name='description' content='Login to have access!' />
+      </Helmet>
+      <div className="max-w-[60rem] mx-auto">
+        <form className="rounded bg-slate-50 p-10 shadow-sm" onSubmit={onSubmit} noValidate>
+          <div className="text-26 font-semibold mb-6 text-blue text-center">Welcome Back!</div>
+          <Input
+            name="email"
+            register={register}
+            type="email"
+            className="mt-8"
+            errorMessage={errors.email?.message}
+            placeholder="Email"
+          />
+          <Input
+            name="password"
+            register={register}
+            type="password"
+            className="mt-3"
+            classNameEye="absolute right-[1.5rem] h-5 w-5 cursor-pointer top-[12px]"
+            errorMessage={errors.password?.message}
+            placeholder="Password"
+            autoComplete="on"
+          />
+          <div className="mt-3">
+            <Button
               type="submit"
-              loading={isLoading}
+              className="flex bg-secondary leading-[4.5rem] h-[4.5rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-red-600"
+              isLoading={loginMutation.isLoading}
+              disabled={loginMutation.isLoading}
             >
               Login
-            </LoadingButton>
-
-            <Typography sx={{ fontSize: "1.2rem", mt: "1rem", color: "#fff", display: "flex", textAlign: "center",justifyContent: "center" }}>
-              Need an account?
-              <LinkItem to="/sign-up">
-                Sign Up Here
-              </LinkItem>
-            </Typography>
-          </Box>
-        </FormProvider>
-      </Box>
-    </Container>
+            </Button>
+          </div>
+          <div className="mt-8 flex items-center justify-center">
+            <StyledLink className="text-[1.4rem]" to="/forgot-password">
+              Forgot Password?
+            </StyledLink>
+          </div>
+        </form>
+      </div>
+    </div>
   );
-};
-
-export default LoginPage;
+}

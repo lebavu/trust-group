@@ -1,82 +1,90 @@
-import { useState } from "react";
-import { useFormik } from "formik";
-import { Button, TextField, Typography, Box } from "@mui/material";
-import axios from "axios";
-import * as Yup from "yup";
-import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { schema, Schema } from "src/utils/rules";
+import { useMutation } from "react-query";
+import authApi from "@/api/auth.api";
+import { isAxiosUnprocessableEntityError } from "@/utils/utils";
+import { ErrorResponse } from "src/types/utils.type";
+import Input from "@/components/Input";
+import Button from "src/components/Button";
+import { Helmet } from "react-helmet-async";
+import styled from "styled-components";
 
-const ForgotPasswordForm = () => {
-  const [isEmailSent, setIsEmailSent] = useState(false);
-  const [emailError, setEmailError] = useState("");
+const StyledLink = styled(Link)`
+  font-family: "Roboto";
+  color: #1e2f8d;
+  &:hover,&.active {
+    text-decoration: underline;
+  }
+`;
+
+type FormData = Pick<Schema, "email">;
+const forgotSchema = schema.pick(["email"]);
+
+export default function Login() {
   const navigate = useNavigate();
-
-  const validationSchema = Yup.object({
-    email: Yup.string().email("Invalid email address").required("Email is required"),
+  const {
+    register,
+    setError,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<FormData>({
+    resolver: yupResolver(forgotSchema)
   });
 
-  const formik = useFormik({
-    initialValues: {
-      email: "",
+  const forgotMutation = useMutation(authApi.forgotPassword, {
+    onSuccess: async () => {
+
+      navigate("/reset-password");
     },
-    validationSchema,
-    onSubmit: async (values) => {
-      try {
-        await axios.post(
-          "https://pm55.corsivalab.xyz/trustGroup/public/api/forgot-password",
-          { email: values.email }
-        );
-        setIsEmailSent(true);
-        setEmailError("");
-        navigate("/verified-code-forgot");
-      } catch (error) {
-        console.error(error);
+    onError: (error) => {
+      if (isAxiosUnprocessableEntityError<ErrorResponse<FormData>>(error)) {
+        const formError = error.response?.data.data;
+        if (formError) {
+          Object.keys(formError).forEach((key) => {
+            setError(key as keyof FormData, {
+              message: formError[key as keyof FormData],
+              type: "Server",
+            });
+          });
+        }
       }
-    },
+    }
   });
 
+  const onSubmit = handleSubmit((data) => {
+    forgotMutation.mutate(data);
+  });
   return (
-    <div className="h-screen w-full flex flex-wrap overflow-y-auto py-[10rem] px-[1.5rem]">
-      <Box
-        className="max-w-[50rem] w-full m-auto"
-        sx={{
-          background: "linear-gradient(190deg, rgba(30,47,141,1) 0%, rgba(91,180,96,1) 96%)",
-          px: { xs: "1rem", sm: "2rem" },
-          py: "3rem",
-          borderRadius: 2,
-        }}
-      >
-        <Typography variant="h3" mb={"3rem"} className="text-center !text-white">
-          Enter email send code
-        </Typography>
-        <form onSubmit={formik.handleSubmit} className="w-full flex gap-[1rem] items-start">
-          <TextField
-            id="email"
+    <div className="h-main">
+      <Helmet>
+        <title>Send code | Trust Group</title>
+        <meta name='description' content='Login to have access!' />
+      </Helmet>
+      <div className="max-w-[60rem] mx-auto">
+        <form className="rounded bg-slate-50 p-10 shadow-sm" onSubmit={onSubmit} noValidate>
+          <div className="text-26 font-semibold mb-6 text-blue text-center">Enter email send code!</div>
+          <Input
             name="email"
-            label="Email"
+            register={register}
             type="email"
-            size="small"
-            className="flex-1 w-full"
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.email && Boolean(formik.errors.email)}
-            helperText={formik.touched.email && formik.errors.email}
-            sx={{
-              "input":{
-                background: "#fff",
-                borderRadius: ".6rem"
-              }
-            }}
+            className="mt-8"
+            errorMessage={errors.email?.message}
+            placeholder="Email"
           />
-          <Button className="!mt-[.2rem] !capitalize" variant="contained" color="primary" type="submit" disabled={!formik.isValid || formik.isSubmitting}>
-            Send Code
-          </Button>
-          {emailError && <p>{emailError}</p>}
-          {isEmailSent && <p>Verification code has been sent to your email.</p>}
+          <div className="mt-3">
+            <Button
+              type="submit"
+              className="flex bg-secondary leading-[4.5rem] h-[4.5rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-red-600"
+              isLoading={forgotMutation.isLoading}
+              disabled={forgotMutation.isLoading}
+            >
+              Send code
+            </Button>
+          </div>
         </form>
-      </Box>
+      </div>
     </div>
   );
-};
-
-export default ForgotPasswordForm;
+}

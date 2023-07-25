@@ -1,9 +1,12 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import { styled, alpha } from "@mui/material/styles";
+import { useContext } from "react";
 import MuiAppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
 import Badge from "@mui/material/Badge";
@@ -12,28 +15,13 @@ import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MoreIcon from "@mui/icons-material/MoreVert";
 import { useAppStore } from "@/appStore";
-import { NavLink , useNavigate } from "react-router-dom";
-import config from "@/config";
-import { toast } from "react-toastify";
-// import { useState } from "react";
-import { LoadingButton as _LoadingButton } from "@mui/lab";
-import { useStateContext } from "@/context";
+import { Link } from "react-router-dom";
+import { AppContext } from "@/context/app.context";
 import { useMutation } from "react-query";
-import { logoutUserFn } from "@/api/auth.api";
-
-const LoadingButton = styled(_LoadingButton)`
-  padding: 0.4rem;
-  color: #222;
-  font-weight: 500;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
+import authApi from "@/api/auth.api";
 
 const AppBar = styled(
   MuiAppBar,
@@ -111,14 +99,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
       onClose={handleMobileMenuClose}
     >
       <MenuItem>
-        <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-          <Badge badgeContent={4} color="error">
-            <MailIcon />
-          </Badge>
-        </IconButton>
-        <p>Messages</p>
-      </MenuItem>
-      <MenuItem>
         <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
           <Badge badgeContent={17} color="error">
             <NotificationsIcon />
@@ -147,35 +127,20 @@ export default function PrimarySearchAppBar() {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const updateOpen = useAppStore((state) => state.updateOpen);
   const dopen = useAppStore((state) => state.dopen);
-  const isMenuOpen = Boolean(anchorEl);
   const navigate = useNavigate();
-  const stateContext = useStateContext();
-  const user = stateContext.state.authUser;
-  const { mutate: logoutUser, isLoading } = useMutation(
-    async () => await logoutUserFn(),
-    {
-      onSuccess: () => {
-        window.location.href = "/login";
-      },
-      onError: (error: any) => {
-        if (Array.isArray(error.response.data.error)) {
-          error.data.error.forEach((el: any) =>
-            toast.error(el.message, {
-              position: "top-right",
-            })
-          );
-        } else {
-          toast.error(error.response.data.message, {
-            position: "top-right",
-          });
-        }
-      },
+  const isMenuOpen = Boolean(anchorEl);
+  const { setIsAuthenticated, isAuthenticated, setProfile, userInfo } = useContext(AppContext);
+  const logoutMutation = useMutation({
+    mutationFn: authApi.logout,
+    onSuccess: () => {
+      setIsAuthenticated(false);
+      setProfile(null);
     }
-  );
-  const onLogoutHandler = async () => {
-    logoutUser();
-  };
+  });
 
+  const handleLogout = () => {
+    logoutMutation.mutate();
+  };
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
@@ -195,95 +160,54 @@ export default function PrimarySearchAppBar() {
 
   const menuId = "primary-search-account-menu";
   const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      id={menuId}
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      {user ? (
+    <div>
+      {isAuthenticated ? (
         [
-          <MenuItem key="my-account" onClick={() => navigate("/my-account")}>
-            My account
-          </MenuItem>,
-          <MenuItem key="logout" onClick={onLogoutHandler}>
-            Logout
-          </MenuItem>,
-          <MenuItem key="change-password" onClick={() => navigate("/change-password")}>
-            Change Password
-          </MenuItem>,
+          <Menu
+            key="menu"
+            anchorEl={anchorEl}
+            anchorOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            id={menuId}
+            keepMounted
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "right",
+            }}
+            open={isMenuOpen}
+            onClose={handleMenuClose}
+          >
+            <MenuItem key="my-account">
+              <Link to="/Profile" onClick={handleMenuClose}>
+                Profile
+              </Link>
+            </MenuItem>,
+            <MenuItem
+              key="logout"
+              onClick={() => {
+                handleLogout();
+                handleMenuClose();
+              }}
+            >
+              Logout
+            </MenuItem>,
+            <MenuItem key="change-password">
+              <Link to="/" onClick={handleMenuClose}>
+                Change Password
+              </Link>
+            </MenuItem>,
+          </Menu>
         ]
       ) : (
         [
-          <LoadingButton
-            key="signup"
-            sx={{ mr: 2 }}
-            onClick={() => navigate("/sign-up")}
-          >
-            SignUp
-          </LoadingButton>,
-          <LoadingButton key="login" loading={isLoading} onClick={() => navigate("/login")}>
+          <Button key="my-account" onClick={() => navigate("/login")}>
             Login
-          </LoadingButton>,
+          </Button>,
         ]
       )}
-      {/* {user && (
-        <>
-          <LoadingButton
-            loading={isLoading}
-            onClick={() => navigate("/profile")}
-          >
-            Profile
-          </LoadingButton>
-          <LoadingButton onClick={onLogoutHandler} loading={isLoading}>
-            Logout
-          </LoadingButton>
-        </>
-      )}
-      {!user && (
-        <>
-          <LoadingButton
-            sx={{ mr: 2 }}
-            onClick={() => navigate("/sign-up")}
-          >
-            SignUp
-          </LoadingButton>
-          <LoadingButton onClick={() => navigate("/login")}>
-            Login
-          </LoadingButton>
-        </>
-      )}
-      {user && (
-        <>
-          <LoadingButton
-            loading={isLoading}
-            onClick={() => navigate("/profile")}
-          >
-            Profile
-          </LoadingButton>
-          <LoadingButton onClick={onLogoutHandler} loading={isLoading}>
-            Logout
-          </LoadingButton>
-        </>
-      )}
-      {user && user?.role_id === "1" && (
-        <LoadingButton
-          sx={{ ml: 2 }}
-          onClick={() => navigate("/admin")}
-        >
-          Admin
-        </LoadingButton>
-      )} */}
-    </Menu>
+    </div>
   );
 
   return (
@@ -301,7 +225,7 @@ export default function PrimarySearchAppBar() {
             <MenuIcon />
           </IconButton>
 
-          <NavLink to={config.routes.Home}>
+          <Link to="/">
             <Typography
               variant="h6"
               noWrap
@@ -314,7 +238,7 @@ export default function PrimarySearchAppBar() {
             >
               Trust Group
             </Typography>
-          </NavLink>
+          </Link>
 
           <Search>
             <SearchIconWrapper>
@@ -324,27 +248,29 @@ export default function PrimarySearchAppBar() {
           </Search>
           <Box sx={{ flexGrow: 1 }} />
           <Box sx={{ display: { xs: "none", md: "flex" } }}>
-            <IconButton size="large" aria-label="show 4 new mails" color="inherit">
-              <Badge badgeContent={4} color="error">
-                <MailIcon />
-              </Badge>
-            </IconButton>
             <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
               <Badge badgeContent={17} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
-            <IconButton
-              size="large"
-              edge="end"
-              aria-label="account of current user"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleProfileMenuOpen}
-              color="inherit"
-            >
-              <AccountCircle />
-            </IconButton>
+            {isAuthenticated && userInfo && (
+              <IconButton
+                size="large"
+                edge="end"
+                aria-label="account of current user"
+                aria-controls={menuId}
+                aria-haspopup="true"
+                onClick={handleProfileMenuOpen}
+                color="inherit"
+              >
+                <div className="flex items-center gap-[1rem]">
+                  <span className="text-[1.4rem]">Welcome, {userInfo.name}</span>
+                  <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
+                    <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
+                  </div>
+                </div>
+              </IconButton>
+            )}
           </Box>
           <Box sx={{ display: { xs: "flex", md: "none" } }}>
             <IconButton

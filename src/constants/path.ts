@@ -1,4 +1,4 @@
-const routes = {
+const path = {
   Home: "/",
   Blogs: "/blogs",
   Branches: "/branches",
@@ -14,9 +14,9 @@ const routes = {
   Users: "/users",
   Login: "/login",
   SignUp: "/sign-up",
-  MyAccount: "/my-account",
+  Profile: "/profile",
   ForgotPassword: "/forgot-password",
-  VerifiedCodeForgot: "/verified-code-forgot"
-};
+  ResetPassword: "/reset-password"
+} as const;
 
-export default routes;
+export default path;

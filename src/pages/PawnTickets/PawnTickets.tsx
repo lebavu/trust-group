@@ -21,7 +21,9 @@ import {
   Typography,
   Pagination,
   Skeleton,
+  InputAdornment
 } from "@mui/material";
+import { Search } from "@mui/icons-material";
 import { LocalizationProvider, DatePicker } from "@mui/lab";
 import AdapterDateFns from "@mui/lab/AdapterDateFns";
 import { PawnTickets } from "@/api/types";
@@ -240,6 +242,13 @@ const PawnTicketComponent: React.FC = () => {
           onChange={handleSearchChange}
           variant="outlined"
           sx={{ marginBottom: "2rem" }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position='end'>
+                <Search />
+              </InputAdornment>
+            )
+          }}
         />
         <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create Pawn Ticket

@@ -16,7 +16,6 @@ const theme = createTheme({
   },
   typography: {
     fontSize: 19.6, // Set the base font size
-    fontFamily: "Roboto, sans-serif",
     h2: {
       fontSize: "2.8rem", // Customize heading level 1
       fontWeight: 700,

@@ -57,17 +57,11 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full flex flex-wrap overflow-y-auto py-[10rem] px-[1.5rem]">
+    <div className="h-main">
       <Box
-        className="max-w-[50rem] w-full m-auto"
-        sx={{
-          background: "linear-gradient(190deg, rgba(30,47,141,1) 0%, rgba(91,180,96,1) 96%)",
-          px: { xs: "1rem", sm: "2rem" },
-          py: "3rem",
-          borderRadius: 2,
-        }}
+        className="max-w-[50rem] w-full m-auto rounded bg-slate-50 p-10 shadow-sm"
       >
-        <Typography variant="h3" mb={"3rem"} className="text-center !text-white">
+        <Typography variant="h3" mb={"3rem"} className="text-center">
           Reset Password
         </Typography>
         <form onSubmit={handleSubmit}>

@@ -23,7 +23,7 @@ import {
   Skeleton,
   InputAdornment
 } from "@mui/material";
-import { Search } from '@mui/icons-material'
+import { Search } from "@mui/icons-material";
 import { User } from "@/api/types";
 import { fetchUsers, createUser, updateUser, deleteUser } from "@/api/user.api";
 
