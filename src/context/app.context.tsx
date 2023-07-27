@@ -12,7 +12,7 @@ interface AppContextInterface {
 
 export const getInitialAppContext: () => AppContextInterface = () => ({
   isAuthenticated: Boolean(getAccessTokenFromLS()),
-  const userInLS = getProfileFromLS();
+  const userInLS = getProfileFromLS(),
   setIsAuthenticated: () => null,
   userInfo: userInLS?.data?.data,
   setProfile: () => null,
