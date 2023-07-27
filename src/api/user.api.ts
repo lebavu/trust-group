@@ -3,8 +3,8 @@ import { User } from "./types";
 
 export async function fetchUsers(): Promise<User[]> {
   const response = await http.get("users");
-  const accessToken = response.data.token;
-  localStorage.setItem("token", accessToken);
+  // const accessToken = response.data.token;
+  // localStorage.setItem("token", accessToken);
   return response.data.data;
 }
 
