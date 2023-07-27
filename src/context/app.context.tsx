@@ -11,14 +11,16 @@ interface AppContextInterface {
 }
 
 export const getInitialAppContext: () => AppContextInterface = () => ({
-  isAuthenticated: Boolean(getAccessTokenFromLS()),
-  const userInLS = getProfileFromLS(),
-  setIsAuthenticated: () => null,
-  userInfo: userInLS?.data?.data,
-  setProfile: () => null,
-  extendedPurchases: [],
-  setExtendedPurchases: () => null,
-  reset: () => null
+  const userInLS = getProfileFromLS();
+  return {
+    isAuthenticated: Boolean(getAccessTokenFromLS()),
+    setIsAuthenticated: () => null,
+    userInfo: userInLS?.data?.data,
+    setProfile: () => null,
+    extendedPurchases: [],
+    setExtendedPurchases: () => null,
+    reset: () => null
+  };
 });
 
 const initialAppContext = getInitialAppContext();
