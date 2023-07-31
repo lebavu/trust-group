@@ -10,7 +10,7 @@ interface AppContextInterface {
   reset: () => void
 }
 
-export const getInitialAppContext: () => AppContextInterface = () => ({
+export const getInitialAppContext: () => AppContextInterface = () => {
   const userInLS = getProfileFromLS();
   return {
     isAuthenticated: Boolean(getAccessTokenFromLS()),
@@ -21,7 +21,7 @@ export const getInitialAppContext: () => AppContextInterface = () => ({
     setExtendedPurchases: () => null,
     reset: () => null
   };
-});
+};
 
 const initialAppContext = getInitialAppContext();
 

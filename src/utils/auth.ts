@@ -24,7 +24,7 @@ export const getProfileFromLS = () => {
       console.error("Error parsing user profile from local storage:", error);
     }
   }
-  return null; // or return an empty object {} instead if you prefer
+  return null;
 };
 
 

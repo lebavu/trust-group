@@ -39,7 +39,8 @@ export default function Login() {
   const loginMutation = useMutation(authApi.login, {
     onSuccess: async () => {
       setIsAuthenticated(true);
-
+      const getAccessTokenFromLS = () => localStorage.getItem("token");
+      console.log(getAccessTokenFromLS);
       try {
         const userInfo = await authApi.getInfoUser();
         setProfile(userInfo.data.data);

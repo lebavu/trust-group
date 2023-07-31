@@ -236,7 +236,7 @@ export default function PrimarySearchAppBar() {
             <StyledInputBase placeholder="Search…" inputProps={{ "aria-label": "search" }} />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
-          {userInfo && (
+          {isAuthenticated && userInfo && (
             <div>
               <Box sx={{ display: { xs: "none", md: "flex" } }}>
                 <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
