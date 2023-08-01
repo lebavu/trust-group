@@ -1,6 +1,5 @@
 const config = {
-  baseUrl: "https://pm55.corsivalab.xyz/trustGroup/public/api/",
-  maxSizeUploadAvatar: 1048576 // bytes
+  baseUrl: "https://pm55.corsivalab.xyz/trustGroup/public/api/v1/",
 };
 
 export default config;

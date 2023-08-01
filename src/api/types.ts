@@ -98,3 +98,23 @@ export interface PawnTickets {
     details?: string;
   };
 }
+
+//e valuations categories
+export interface EValuationCategory {
+  id: string;
+  name: string;
+  desc: string;
+  parent: string;
+  errors?: {
+    name?: string;
+    desc?: string;
+    parent?: string;
+  };
+}
+
+export type EValuationCategoryFormData = {
+  id: string;
+  name: string;
+  desc: string;
+  parent: string
+};

@@ -130,7 +130,7 @@ function DefaultLayoutInner({ children }: Props) {
             </ListItem>
             <ListItem disablePadding>
               <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/evaluation-categories">
+                <Link className='flex w-full items-center gap-3' to="/e-valuation-categories">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,

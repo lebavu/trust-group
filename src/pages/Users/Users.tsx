@@ -327,6 +327,9 @@ const UserComponent: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>
+                {users.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+              </TableCell>
+              <TableCell>
                 {users.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
               </TableCell>
               <TableCell>
@@ -348,6 +351,7 @@ const UserComponent: React.FC = () => {
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <TableRow key={user.id}>
+                  <TableCell>{user.id}</TableCell>
                   <TableCell>{user.name}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.handphone_number}</TableCell>
@@ -367,7 +371,7 @@ const UserComponent: React.FC = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6}>
+                <TableCell colSpan={7}>
                   {users.length === 0 ? (
                     <Skeleton variant="rectangular" height={50} animation="wave" />
                   ) : (

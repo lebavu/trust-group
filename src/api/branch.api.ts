@@ -1,10 +1,8 @@
-import axios from "axios";
+import http from "@/utils/http";
 import { Branch } from "./types";
 
-const BASE_URL = "https://pm55.corsivalab.xyz/trustGroup/public/api";
-
 export async function fetchBranches(): Promise<Branch[]> {
-  const response = await axios.get(`${BASE_URL}/branches`);
+  const response = await http.get("branches");
   return response.data.data;
 }
 
@@ -14,7 +12,7 @@ export async function createBranch(branch: Branch): Promise<void> {
   formData.append("address", branch.address);
   formData.append("image", branch.image_url);
 
-  await axios.post(`${BASE_URL}/branches`, formData, {
+  await http.post("branches", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -28,7 +26,7 @@ export async function updateBranch(branch: Branch): Promise<void> {
   formData.append("address", branch.address);
   formData.append("image", branch.image_url);
 
-  await axios.post(`${BASE_URL}/branches/${branch.id}`, formData, {
+  await http.post(`branches/${branch.id}`, formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },
@@ -36,5 +34,5 @@ export async function updateBranch(branch: Branch): Promise<void> {
 }
 
 export async function deleteBranch(branchId: string): Promise<void> {
-  await axios.delete(`${BASE_URL}/branches/${branchId}`);
+  await http.delete(`branches/${branchId}`);
 }
