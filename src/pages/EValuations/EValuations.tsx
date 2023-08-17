@@ -667,7 +667,7 @@ const EValuationComponent: React.FC = () => {
                   const event = {
                     target: {
                       name: "date",
-                      value: newValue ? newValue.toISOString().replace("T", " ").slice(0, 19) : ""
+                      value: newValue ? newValue.toString().replace("T", " ").slice(0, 19) : ""
                     }
                   } as React.ChangeEvent<HTMLInputElement>;
                   handleInputChange(event);
@@ -685,7 +685,7 @@ const EValuationComponent: React.FC = () => {
                   const event = {
                     target: {
                       name: "appointment_date",
-                      value: newValue ? newValue.toISOString().replace("T", " ").slice(0, 19) : ""
+                      value: newValue ? newValue.toString().replace("T", " ").slice(0, 19) : ""
                     }
                   } as React.ChangeEvent<HTMLInputElement>;
                   handleInputChange(event);
