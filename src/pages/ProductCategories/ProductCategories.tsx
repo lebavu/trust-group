@@ -1,7 +1,8 @@
-import { useState, ChangeEvent } from "react";
+import React, { useState, useEffect, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
+import { Helmet } from "react-helmet-async";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
@@ -21,14 +22,21 @@ import {
   DialogTitle,
   Pagination,
   Skeleton,
+  MenuItem,
+  Stack
 } from "@mui/material";
 
-// Interface representing the structure of a branch object
+interface Parent {
+  id: string;
+  name: string;
+  desc: string;
+}
+
 interface Branch {
   id: string;
   name: string;
   desc: string;
-  parent: string;
+  parent: Parent;
   errors?: {
     name?: string;
     desc?: string;
@@ -36,79 +44,135 @@ interface Branch {
   };
 }
 
-// Schema for validating the branch object
 const branchSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
   desc: yup.string().required("Description is required"),
-  parent: yup.string().required("Parent is required"),
+  parent: yup.object().shape({
+    id: yup.string().required("Parent ID is required"),
+    name: yup.string().required("Parent Name is required"),
+    desc: yup.string().required("Parent Description is required"),
+  }),
 });
 
-// Main component for managing branches
 const BranchComponent: React.FC = () => {
   const queryClient = useQueryClient();
-
   const { data: branches = [] } = useQuery<Branch[]>("branches", async () => {
-    const response = await axios.get("https://pm55.corsivalab.xyz/trustGroup/public/api/product-categories");
+    const response = await axios.get(
+      "https://pm55.corsivalab.xyz/trustGroup/public/api/v1/product-categories"
+    );
     return response.data.data;
   });
 
-  const createBranchMutation = useMutation((newBranch: Branch) => {
-    return axios.post<Branch>("https://pm55.corsivalab.xyz/trustGroup/public/api/product-categories", newBranch);
-  }, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("branches");
-      toast.success("Branch created successfully.");
+  const createBranchMutation = useMutation(
+    (newBranch: Branch) => {
+      return axios.post<Branch>(
+        "https://pm55.corsivalab.xyz/trustGroup/public/api/v1/product-categories",
+        newBranch
+      );
     },
-    onError: () => {
-      toast.error("Failed to create branch.");
-    },
-  });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("branches");
+        toast.success("Branch created successfully.");
+      },
+      onError: () => {
+        toast.error("Failed to create branch.");
+      },
+    }
+  );
 
-  const updateBranchMutation = useMutation((updatedBranch: Branch) => {
-    return axios.put<Branch>(`https://pm55.corsivalab.xyz/trustGroup/public/api/product-categories/${updatedBranch.id}`, updatedBranch);
-  }, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("branches");
-      toast.success("Branch updated successfully.");
+  const updateBranchMutation = useMutation(
+    (updatedBranch: Branch) => {
+      return axios.put<Branch>(
+        `https://pm55.corsivalab.xyz/trustGroup/public/api/v1/product-categories/${updatedBranch.id}`,
+        updatedBranch
+      );
     },
-    onError: () => {
-      toast.error("Failed to update branch.");
-    },
-  });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("branches");
+        toast.success("Branch updated successfully.");
+      },
+      onError: () => {
+        toast.error("Failed to update branch.");
+      },
+    }
+  );
 
-  const deleteBranchMutation = useMutation((branchId: string) => {
-    return axios.delete(`https://pm55.corsivalab.xyz/trustGroup/public/api/product-categories/${branchId}`);
-  }, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("branches");
-      toast.success("Branch deleted successfully.");
+  const deleteBranchMutation = useMutation(
+    (branchId: string) => {
+      return axios.delete(
+        `https://pm55.corsivalab.xyz/trustGroup/public/api/v1/product-categories/${branchId}`
+      );
     },
-    onError: () => {
-      toast.error("Failed to delete branch.");
-    },
-  });
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("branches");
+        toast.success("Branch deleted successfully.");
+      },
+      onError: () => {
+        toast.error("Failed to delete branch.");
+      },
+    }
+  );
 
   const [newBranch, setNewBranch] = useState<Branch>({
     id: "",
     name: "",
     desc: "",
-    parent: "",
+    parent: {
+      id: "",
+      name: "",
+      desc: "",
+    },
   });
 
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const branchesPerPage = 5;
+  const branchesPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
 
+  const [parentOptions, setParentOptions] = useState<Parent[]>([]);
+
+  useEffect(() => {
+    axios.get("https://pm55.corsivalab.xyz/trustGroup/public/api/v1/product-categories").then((response) => {
+      setParentOptions(response.data.data);
+    });
+  }, []);
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setNewBranch((prevNewBranch) => ({
-      ...prevNewBranch,
-      [name]: value,
-    }));
+    if (name === "parent") {
+      if (!isParentSelectionValid(value, newBranch.id)) {
+        toast.error("Invalid parent selection.");
+        return;
+      }
+      const selectedParent = parentOptions.find((parent) => parent.id === value);
+      setNewBranch((prevNewBranch) => ({
+        ...prevNewBranch,
+        parent: selectedParent || {
+          id: "",
+          name: "",
+          desc: "",
+        },
+      }));
+
+    } else {
+      setNewBranch((prevNewBranch) => ({
+        ...prevNewBranch,
+        [name]: value,
+      }));
+    }
+  };
+
+  const isParentSelectionValid = (selectedParentId: string, branchId: string): boolean => {
+    if (selectedParentId === branchId) {
+      return false;
+    }
+    return true;
   };
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -140,7 +204,11 @@ const BranchComponent: React.FC = () => {
       id: "",
       name: "",
       desc: "",
-      parent: "",
+      parent: {
+        id: "",
+        name: "",
+        desc: "",
+      },
     });
     setOpen(true);
   };
@@ -174,7 +242,11 @@ const BranchComponent: React.FC = () => {
         id: "",
         name: "",
         desc: "",
-        parent: "",
+        parent: {
+          id: "",
+          name: "",
+          desc: "",
+        },
       });
       setOpen(false);
     } catch (err: any) {
@@ -201,7 +273,11 @@ const BranchComponent: React.FC = () => {
         id: selectedBranch?.id || "",
         name: newBranch.name || selectedBranch?.name || "",
         desc: newBranch.desc || selectedBranch?.desc || "",
-        parent: newBranch.parent || selectedBranch?.parent || "",
+        parent: {
+          id: newBranch.parent.id || selectedBranch?.parent.id || "",
+          name: newBranch.parent.name || selectedBranch?.parent.name || "",
+          desc: newBranch.parent.desc || selectedBranch?.parent.desc || "",
+        },
       };
 
       await updateBranchMutation.mutateAsync(updatedBranch);
@@ -213,7 +289,11 @@ const BranchComponent: React.FC = () => {
         id: "",
         name: "",
         desc: "",
-        parent: "",
+        parent: {
+          id: "",
+          name: "",
+          desc: "",
+        },
       });
     } catch (err: any) {
       const validationErrors: { [key: string]: string } = {};
@@ -241,6 +321,10 @@ const BranchComponent: React.FC = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Products Categories | Trust Group</title>
+        <meta name='description' content='Products Categories to have access!' />
+      </Helmet>
       <div className="mb-10 flex items-center justify-between gap-3">
         <TextField
           label="Search"
@@ -248,7 +332,7 @@ const BranchComponent: React.FC = () => {
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
-          sx={{ marginBottom: "2rem" }}
+
         />
         <Button variant="contained" color="primary" onClick={openFormPopup}>
           Create Branch
@@ -278,16 +362,16 @@ const BranchComponent: React.FC = () => {
                 <TableRow key={branch.id}>
                   <TableCell>{branch.name}</TableCell>
                   <TableCell>{branch.desc}</TableCell>
-                  <TableCell>{branch.parent}</TableCell>
+                  <TableCell>{branch.parent?.name}</TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center justify-end gap-5">
+                    <Stack direction="row" spacing={2} justifyContent={"end"}>
                       <Button variant="contained" color="primary" onClick={() => openEditFormPopup(branch)}>
                         Edit
                       </Button>
                       <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(branch)}>
                         Delete
                       </Button>
-                    </div>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))
@@ -345,14 +429,24 @@ const BranchComponent: React.FC = () => {
           <TextField
             name="parent"
             label="Parent"
-            value={newBranch.parent}
+            select
+            value={newBranch.parent?.id}
             onChange={handleInputChange}
             variant="outlined"
             fullWidth
             error={!!newBranch.errors?.parent}
             helperText={newBranch.errors?.parent}
             sx={{ marginBottom: "2rem" }}
-          />
+          >
+            <MenuItem value="">
+              <em>Select a parent</em>
+            </MenuItem>
+            {parentOptions.map((parent) => (
+              <MenuItem key={parent.id} value={parent.id}>
+                {parent.name}
+              </MenuItem>
+            ))}
+          </TextField>
         </DialogContent>
         <DialogActions className="!p-10">
           {selectedBranch ? (

@@ -18,15 +18,20 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Stack,
   Typography,
   Pagination,
   Skeleton,
   InputAdornment
 } from "@mui/material";
+import { Helmet } from "react-helmet-async";
 import { Search } from "@mui/icons-material";
+// Replace with actual API types
 import { EValuationCategory } from "@/api/types";
+// Replace with actual API functions
 import { getEValuationsCategoriesById, fetchEValuationsCategories, createEValuationCategory, updateEValuationCategory, deleteEValuationCategory } from "@/api/e-valuation-category.api";
 
+// Schema for validating the EValuationCategory object
 const eValuationCategorySchema = yup.object().shape({
   name: yup.string().required("Name is required"),
   desc: yup.string().required("desc is required"),
@@ -36,11 +41,20 @@ const eValuationCategorySchema = yup.object().shape({
 // Main component for managing eValuationsCategories
 const EValuationCategoryComponent: React.FC = () => {
   const queryClient = useQueryClient();
-  // const [parentName, setParentName] = useState("");
-  // function isParentWithName(parent: any): parent is { name: string } {
-  //   return typeof parent === "object" && parent !== null && "name" in parent;
-  // }
   const { data: eValuationsCategories = [] } = useQuery<EValuationCategory[]>("eValuationsCategories", fetchEValuationsCategories);
+
+  async function fetchData(id: string) {
+    try {
+      const data = await getEValuationsCategoriesById(id);
+      console.log(data?.name); // Do something with the data
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  }
+
+  // Call the fetchData function with the desired ID
+  const categoryId = "1"; // Replace '123' with the desired ID
+  fetchData(categoryId);
 
   const createEValuationCategoryMutation = useMutation(createEValuationCategory, {
     onSuccess: () => {
@@ -83,7 +97,7 @@ const EValuationCategoryComponent: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const eValuationsCategoriesPerPage = 5;
+  const eValuationsCategoriesPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [eValuationCategoryToDelete, setEValuationCategoryToDelete] = useState<EValuationCategory | null>(null);
 
@@ -129,39 +143,12 @@ const EValuationCategoryComponent: React.FC = () => {
     setOpen(true);
   };
 
-  const openEditFormPopup = async (eValuationCategory: EValuationCategory) => {
-    try {
-      const fetchedEValuationCategory = await getEValuationsCategoriesById(eValuationCategory.id);
-
-      if (fetchedEValuationCategory !== null) {
-        // setSelectedEValuationCategory(fetchedEValuationCategory);
-        // setNewEValuationCategory({
-        //   id: fetchedEValuationCategory.id,
-        //   name: fetchedEValuationCategory.name,
-        //   desc: fetchedEValuationCategory.desc,
-        //   parent: fetchedEValuationCategory.parent ? fetchedEValuationCategory.parent.id : "",
-        // });
-        // if (fetchedEValuationCategory.parent) {
-        //   const parentEValuationCategory = await getEValuationsCategoriesById(fetchedEValuationCategory.parent.id);
-        //   if (parentEValuationCategory !== null) {
-        //     setParentName(parentEValuationCategory.name);
-        //   } else {
-        //     setParentName("");
-        //   }
-        // } else {
-        //   setParentName("");
-        // }
-        // setOpen(true);
-      } else {
-        // Handle the case when fetchedEValuationCategory is null
-        console.error("EValuationCategory not found for ID:", eValuationCategory.id);
-        toast.error("EValuationCategory not found.");
-      }
-    } catch (error) {
-      // Handle error if the API call fails
-      console.error(error);
-      toast.error("Failed to fetch EValuationCategory details.");
-    }
+  const openEditFormPopup = (eValuationCategory: EValuationCategory) => {
+    setSelectedEValuationCategory(eValuationCategory);
+    setNewEValuationCategory({
+      ...eValuationCategory,
+    });
+    setOpen(true);
   };
 
   const closeFormPopup = () => {
@@ -255,6 +242,10 @@ const EValuationCategoryComponent: React.FC = () => {
 
   return (
     <div>
+      <Helmet>
+        <title>Categories | Trust Group</title>
+        <meta name='description' content='Categories to have access!' />
+      </Helmet>
       <Typography variant="h3" mb={"3rem"}>
         EValuationsCategories List
       </Typography>
@@ -265,7 +256,6 @@ const EValuationCategoryComponent: React.FC = () => {
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
-          sx={{ marginBottom: "2rem" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -306,16 +296,16 @@ const EValuationCategoryComponent: React.FC = () => {
                   <TableCell>{eValuationCategory.id}</TableCell>
                   <TableCell>{eValuationCategory.name}</TableCell>
                   <TableCell>{eValuationCategory.desc}</TableCell>
-                  {/* <TableCell>{isParentWithName(eValuationCategory.parent) ? eValuationCategory.parent.name : parentName}</TableCell> */}
+                  <TableCell></TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center justify-end gap-5">
+                    <Stack direction="row" spacing={2} justifyContent={"end"}>
                       <Button variant="contained" color="primary" onClick={() => openEditFormPopup(eValuationCategory)}>
                         Edit
                       </Button>
                       <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(eValuationCategory)}>
                         Delete
                       </Button>
-                    </div>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))

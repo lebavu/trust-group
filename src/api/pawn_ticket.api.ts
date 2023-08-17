@@ -7,30 +7,11 @@ export async function fetchPawnTickets(): Promise<PawnTickets[]> {
 }
 
 export async function createPawnTicket(pawnTicket: PawnTickets): Promise<void> {
-  const formData = new FormData();
-  formData.append("user_id", pawnTicket.user_id);
-  formData.append("date_time", pawnTicket.date_time.toISOString());
-  formData.append("details", pawnTicket.details);
-
-  await http.post("pawn-tickets", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  await http.post("pawn-tickets", pawnTicket );
 }
 
 export async function updatePawnTicket(pawnTicket: PawnTickets): Promise<void> {
-  const formData = new FormData();
-  formData.append("_method", "PUT");
-  formData.append("user_id", pawnTicket.user_id);
-  formData.append("date_time", pawnTicket.date_time.toISOString());
-  formData.append("details", pawnTicket.details);
-
-  await http.post(`pawn-tickets/${pawnTicket.id}`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+  await http.put(`pawn-tickets/${pawnTicket.id}`, pawnTicket);
 }
 
 export async function deletePawnTicket(pawnTicketId: string): Promise<void> {

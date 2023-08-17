@@ -20,7 +20,7 @@ export default function LoginHeader() {
               sx={{
                 display: { xs: "none", sm: "block" },
                 fontWeight: "bold",
-                color: "#fff",
+                color: "#fff!important",
               }}
             >
                 Trust Group

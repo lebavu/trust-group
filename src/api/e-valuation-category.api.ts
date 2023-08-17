@@ -33,15 +33,14 @@ export async function updateEValuationCategory(eValuationCategory: EValuationCat
   });
 }
 
-export async function getEValuationsCategoriesById(eValuationCategoryId: string): Promise<EValuationCategory | null> {
-  try {
-    const response = await http.get(`e-valuation-categories/${eValuationCategoryId}`);
-    return response.data.data;
-  } catch (error) {
-    // Handle the error appropriately, e.g., log the error or show an error message
-    console.error("Error fetching EValuationCategory by ID:", error);
-    return null;
-  }
+// export const getEValuationsCategoriesById = async (id: string) => {
+//   const response = await http.get<EValuationCategory>(`e-valuation-categories/${id}`);
+//   return response.data.data;
+// };
+
+export async function getEValuationsCategoriesById(id: string): Promise<EValuationCategory | null> {
+  const response = await http.get(`e-valuation-categories/${id}`);
+  return response.data.data;
 }
 
 export async function deleteEValuationCategory(eValuationCategoryId: string): Promise<void> {

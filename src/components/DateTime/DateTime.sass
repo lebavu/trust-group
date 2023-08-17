@@ -1,0 +1,77 @@
+.react-datetime-picker
+  width: 100%
+  .react-datetime-picker__wrapper
+    border-radius: 4px
+    border-color: rgba(0, 0, 0, 0.23)
+    padding: 4.2px 14px
+    font-size: 1.4000000000000001rem
+  .react-datetime-picker__clear-button,.react-datetime-picker__calendar-button
+    svg
+      width: 15px
+      opacity: .8
+      stroke: #202020
+    &:hover,&:focus
+      svg
+        stroke: var(--primary)!important
+  .react-datetime-picker__inputGroup
+    padding: 0
+.react-datetime-picker__calendar .react-calendar
+  border-radius: 4px
+  border-color: rgba(0, 0, 0, 0.23)
+  margin-top: 1rem
+.react-datetime-picker__calendar
+  z-index: 9
+  .react-calendar__tile--now
+    color: #fff
+    background: none
+    z-index: 1
+    position: relative
+    &:after
+      content: ''
+      position: absolute
+      width: 28px
+      height: 28px
+      border-radius: 50%
+      background: var(--secondary)
+      z-index: -1
+      top: 50%
+      left: 50%
+      transform: translate(-50%,-50%)
+  .react-calendar__tile--active
+    color: #fff
+    position: relative
+    background: none
+    z-index: 1
+    &:after
+      content: ''
+      position: absolute
+      width: 28px
+      height: 28px
+      border-radius: 50%
+      background: var(--primary)
+      z-index: -1
+      top: 50%
+      left: 50%
+      transform: translate(-50%,-50%)
+  .react-calendar__tile--active:enabled:hover, .react-calendar__tile--active:enabled:focus
+    background: none
+  .react-calendar__tile:enabled:hover, .react-calendar__tile:enabled:focus
+    position: relative
+    background: none
+    z-index: 1
+    &:after
+      content: ''
+      position: absolute
+      width: 28px
+      height: 28px
+      border-radius: 50%
+      background: #e6e6e6
+      z-index: -1
+      top: 50%
+      left: 50%
+      transform: translate(-50%,-50%)
+  .react-calendar__navigation
+    font-size: 2rem
+    .react-calendar__navigation__label
+      font-size: 1.5rem
+      font-weight: bold

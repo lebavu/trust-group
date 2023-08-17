@@ -35,8 +35,7 @@ export default function Register() {
   const onSubmit = handleSubmit((data) => {
     const body = omit(data, ["confirm_password"]);
     resetPasswordMutation.mutate(body, {
-      onSuccess: (data) => {
-        console.log(data);
+      onSuccess: () => {
         navigate("/");
       },
       onError: (error) => {
@@ -50,18 +49,6 @@ export default function Register() {
               });
             });
           }
-          // if (formError?.email) {
-          //   setError("email", {
-          //     message: formError.email,
-          //     type: "Server"
-          //   })
-          // }
-          // if (formError?.password) {
-          //   setError("password", {
-          //     message: formError.password,
-          //     type: "Server"
-          //   })
-          // }
         }
       }
     });

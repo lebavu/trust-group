@@ -3,7 +3,7 @@ const path = {
   Blogs: "/blogs",
   Branches: "/branches",
   EValuationCategories: "/e-valuation-categories",
-  EValuations: "/e-valuations",
+  EValuations: "/evaluations",
   InstalmentPlans: "/instalment-plans",
   PawnTickets: "/pawn-tickets",
   ProductCategories: "/product-categories",

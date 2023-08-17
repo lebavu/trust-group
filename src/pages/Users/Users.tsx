@@ -21,31 +21,26 @@ import {
   Typography,
   Pagination,
   Skeleton,
-  InputAdornment
+  Stack,
+  InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  FormHelperText,
+  InputLabel
 } from "@mui/material";
+import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { User } from "@/api/types";
 import { fetchUsers, createUser, updateUser, deleteUser } from "@/api/user.api";
+import MediaManager from "@/components/Media";
+import http from "@/utils/http";
+import { Helmet } from "react-helmet-async";
 
 const userSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
   email: yup.string().required("Email is required"),
-  profile_image: yup
-    .mixed()
-    .test("fileType", "Invalid file type", function (value) {
-      if (!value) return true;
-      const validFormats = ["image/jpeg", "image/png"];
-      const fileType = (value as File).type;
-
-      return validFormats.includes(fileType);
-    })
-    .test("fileSize", "File size is too large", function (value) {
-      if (!value) return true;
-
-      const fileSizeInMB = (value as File).size / (1024 * 1024);
-      const maxSizeInMB = 20;
-      return fileSizeInMB <= maxSizeInMB;
-    }),
+  profile_image: yup.string().required("Profile image is required"),
   handphone_number: yup.string().required("Handphone Number is required"),
   role_id: yup.string().required("Role is required"),
   password: yup
@@ -67,12 +62,27 @@ const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
     return null;
   }
 };
+//role
+const fetchRoles = async () => {
+  const response = await http.get("roles");
+  return response.data.data;
+};
 
-// Main component for managing users
+const fetchRoleName = async (roleId: string) => {
+  const response = await http.get(`roles/${roleId}`);
+  return response.data.data.name;
+};
+
+const RoleName: React.FC<{ roleId: string }> = ({ roleId }) => {
+  const { data: roleName } = useQuery(["roleName", roleId], () => fetchRoleName(roleId));
+  return <>{roleName}</>;
+};
+
 const UserComponent: React.FC = () => {
   const queryClient = useQueryClient();
 
   const { data: users = [] } = useQuery<User[]>("users", fetchUsers);
+  const { data: roles = [] } = useQuery("roles", fetchRoles);
 
   const createUserMutation = useMutation(createUser, {
     onSuccess: () => {
@@ -103,7 +113,6 @@ const UserComponent: React.FC = () => {
       toast.error("Failed to delete user.");
     },
   });
-
   const [newUser, setNewUser] = useState<User>({
     id: "",
     name: "",
@@ -119,18 +128,23 @@ const UserComponent: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 5;
+  const usersPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [selectedRoleId, setSelectedRoleId] = useState<string>("");
+  const [selectedRoleIdFilter, setSelectedRoleIdFilter] = useState<string>("");
 
-  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
+    if (name === "role_id") {
+      setSelectedRoleId(value as string);
+    }
     setNewUser((prevNewUser) => ({
       ...prevNewUser,
       [name]: value,
     }));
   };
-
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchKeyword(event.target.value);
   };
@@ -139,31 +153,25 @@ const UserComponent: React.FC = () => {
     setCurrentPage(value);
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setNewUser((prevNewUser) => ({
-        ...prevNewUser,
-        profile_image: prevNewUser.profile_image instanceof File ? prevNewUser.profile_image : file,
-      }));
-
-      if (selectedUser) {
-        setSelectedUser((prevSelectedUser) => ({
-          ...(prevSelectedUser as User),
-          profile_image: prevSelectedUser?.profile_image instanceof File ? prevSelectedUser.profile_image : file,
-        }));
-      }
-    }
+  const handleSelectedMedia = (media: any) => {
+    setSelectedImageUrl(media.image_url);
+    setNewUser((prevNewUser) => ({
+      ...prevNewUser,
+      profile_image: media.image_url, // Set the profile_image property
+    }));
   };
+
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = users ? users.slice(indexOfFirstUser, indexOfLastUser) : [];
 
   const filteredUsers = currentUsers.filter((user) => {
+    const isMatchingRole = !selectedRoleIdFilter || user.role_id === selectedRoleIdFilter;
+
     if (user && user.name) {
       const nameMatch = user.name.toLowerCase().includes(searchKeyword.toLowerCase());
       const addressMatch = user.email.toLowerCase().includes(searchKeyword.toLowerCase());
-      return nameMatch || addressMatch;
+      return isMatchingRole && (nameMatch || addressMatch);
     }
     return false;
   });
@@ -182,12 +190,17 @@ const UserComponent: React.FC = () => {
       password: "",
       verified_code_forgot: ""
     });
+    setSelectedImageUrl("");
     setOpen(true);
   };
 
   const openEditFormPopup = (user: User) => {
     setSelectedUser(user);
-    setNewUser(user);
+    setNewUser({
+      ...user,
+      role_id: user.role_id || "", // Set the selected role id
+    });
+    setSelectedImageUrl(user.profile_image);
     setOpen(true);
   };
 
@@ -208,6 +221,12 @@ const UserComponent: React.FC = () => {
 
   const handleCreateUser = async () => {
     try {
+      if (!newUser.profile_image) {
+        setNewUser((prevNewUser) => ({
+          ...prevNewUser,
+          profile_image: "",
+        }));
+      }
       await userSchema.validate(newUser, { abortEarly: false });
       createUserMutation.mutate(newUser);
       setNewUser({
@@ -222,6 +241,7 @@ const UserComponent: React.FC = () => {
       });
       setOpen(false);
     } catch (err: any) {
+      console.error(err);
       const validationErrors: { [key: string]: string } = {};
       if (yup.ValidationError.isError(err)) {
         err.inner.forEach((e) => {
@@ -252,7 +272,6 @@ const UserComponent: React.FC = () => {
         profile_image: newUser.profile_image || selectedUser?.profile_image || "",
       };
 
-      // Check if the image URL is not changed, use the current value
       if (!newUser.profile_image) {
         updatedUser.profile_image = selectedUser?.profile_image || "";
       }
@@ -297,8 +316,14 @@ const UserComponent: React.FC = () => {
     setUserToDelete(null);
   };
 
+  const uniqueRoleIds = Array.from(new Set(users.map(user => user.role_id)));
+
   return (
     <div>
+      <Helmet>
+        <title>Users | Trust Group</title>
+        <meta name='description' content='Users to have access!' />
+      </Helmet>
       <Typography variant="h3" mb={"3rem"}>
         Users List
       </Typography>
@@ -309,7 +334,6 @@ const UserComponent: React.FC = () => {
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
-          sx={{ marginBottom: "2rem" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -322,6 +346,26 @@ const UserComponent: React.FC = () => {
           Create User
         </Button>
       </div>
+      <Box sx={{ maxWidth: "20rem" }} mb={"2rem"}>
+        <FormControl fullWidth >
+          <InputLabel size="small" id="select-filter-label">All Role</InputLabel>
+          <Select
+            labelId="select-filter-label"
+            id="simple-select-filter"
+            size="small"
+            label="All Role"
+            value={selectedRoleIdFilter}
+            onChange={(event) => setSelectedRoleIdFilter(event.target.value)}
+          >
+            <MenuItem value="">All Roles</MenuItem>
+            {uniqueRoleIds.map((roleId) => (
+              <MenuItem key={roleId} value={roleId}>
+                <RoleName roleId={roleId} />
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <TableContainer>
         <Table>
           <TableHead>
@@ -356,16 +400,20 @@ const UserComponent: React.FC = () => {
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.handphone_number}</TableCell>
                   <TableCell className="max-w-[30rem] break-words">{renderImageUrl(user.profile_image)}</TableCell>
-                  <TableCell>{user.role_id}</TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center justify-end gap-5">
+                    {user.role_id && (
+                      <RoleName roleId={user.role_id} />
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Stack direction="row" spacing={2} justifyContent={"end"}>
                       <Button variant="contained" color="primary" onClick={() => openEditFormPopup(user)}>
                         Edit
                       </Button>
                       <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(user)}>
                         Delete
                       </Button>
-                    </div>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))
@@ -432,18 +480,27 @@ const UserComponent: React.FC = () => {
             helperText={newUser.errors?.handphone_number}
             sx={{ marginBottom: "2rem" }}
           />
-          <TextField
-            name="role_id"
-            label="Role Id"
-            size="small"
-            value={newUser.role_id}
-            onChange={handleInputChange}
-            variant="outlined"
-            fullWidth
-            error={!!newUser.errors?.role_id}
-            helperText={newUser.errors?.role_id}
-            sx={{ marginBottom: "2rem" }}
-          />
+          <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
+            <InputLabel size="small" id="select-role">Role</InputLabel>
+            <Select
+              labelId="select-role"
+              id="role-select"
+              size="small"
+              name="role_id"
+              value={selectedRoleId || newUser.role_id}
+              onChange={handleInputChange}
+              variant="outlined"
+              error={!!newUser.errors?.role_id}
+              sx={{ marginBottom: "2rem" }}
+            >
+              {roles.map((role:any) => (
+                <MenuItem key={role.id} value={role.id}>
+                  {role.name}
+                </MenuItem>
+              ))}
+            </Select>
+            {newUser.errors?.role_id && <FormHelperText error>{newUser.errors.role_id}</FormHelperText>}
+          </FormControl>
           <TextField
             name="password"
             label="Password"
@@ -457,16 +514,15 @@ const UserComponent: React.FC = () => {
             helperText={newUser.errors?.password}
             sx={{ marginBottom: "2rem" }}
           />
-
-          {selectedUser && selectedUser.profile_image && (
-            <>
-              {renderImageUrl(selectedUser.profile_image)}
-              {newUser.errors?.profile_image && (
-                <div className="error-text">{newUser.errors.profile_image}</div>
-              )}
-            </>
+          {selectedImageUrl && (
+            <div>
+              <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
+              <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
+                <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+              </div>
+            </div>
           )}
-          <input type="file" onChange={handleFileChange} />
+          <MediaManager onMediaSelect={handleSelectedMedia} />
         </DialogContent>
         <DialogActions className="!p-10">
           {selectedUser ? (

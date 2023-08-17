@@ -110,11 +110,10 @@ function DefaultLayoutInner({ children }: Props) {
             </IconButton>
           </DrawerHeader>
           <Divider />
-
           <List>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/branches">
+              <Link className='flex w-full items-center gap-3' to="/branches">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -125,12 +124,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <LinkIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Branches' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/e-valuation-categories">
+              <Link className='flex w-full items-center gap-3' to="/e-valuation-categories">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -141,12 +140,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <CategoryIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation Categories' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/evaluations">
+              <Link className='flex w-full items-center gap-3' to="/evaluations">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -157,12 +156,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ArchiveIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/blogs">
+              <Link className='flex w-full items-center gap-3' to="/blogs">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -173,12 +172,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ArticleIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/instalment-plans">
+              <Link className='flex w-full items-center gap-3' to="/instalment-plans">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -189,12 +188,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ArchiveIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Instalment Plans' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/pawn-tickets">
+              <Link className='flex w-full items-center gap-3' to="/pawn-tickets">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -205,12 +204,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ConfirmationNumberIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Pawn Tickets' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/product-categories">
+              <Link className='flex w-full items-center gap-3' to="/product-categories">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -221,12 +220,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <CategoryIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Product Categories' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/products">
+              <Link className='flex w-full items-center gap-3' to="/products">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -237,12 +236,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ArchiveIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Products' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/projects">
+              <Link className='flex w-full items-center gap-3' to="/projects">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -253,12 +252,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <ArchiveIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Projects' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/roles">
+              <Link className='flex w-full items-center gap-3' to="/roles">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -269,12 +268,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <SupervisorAccountIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Roles' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/stories">
+              <Link className='flex w-full items-center gap-3' to="/stories">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -285,12 +284,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <WebStoriesIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Stories' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
             <ListItem disablePadding>
-              <ListItemButton>
-                <Link className='flex w-full items-center gap-3' to="/users">
+              <Link className='flex w-full items-center gap-3' to="/users">
+                <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
                       flexShrink: 0,
@@ -301,12 +300,12 @@ function DefaultLayoutInner({ children }: Props) {
                     <AccountBoxIcon />
                   </ListItemIcon>
                   <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Users' />
-                </Link>
-              </ListItemButton>
+                </ListItemButton>
+              </Link>
             </ListItem>
           </List>
         </Drawer>
-        <Box component='main' sx={{ flexGrow: 1, padding: "5rem 3rem", width: 100 + "%" }}>
+        <Box component='main' sx={{ flexGrow: 1, padding: "5rem 3rem", width: "calc(100% - 240px)" }}>
           {children}
           <Outlet />
         </Box>

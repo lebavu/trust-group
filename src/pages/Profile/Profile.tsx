@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState , useContext } from "react";
 import { Box, Container, Typography, Tabs, Tab, List, ListItem, ListItemText } from "@mui/material";
-import { useContext } from "react";
 import { AppContext } from "@/context/app.context";
+import { Helmet } from "react-helmet-async";
 
 
 const Profile = () => {
@@ -13,6 +13,10 @@ const Profile = () => {
 
   return (
     <Box sx={{ flexGrow: 1, marginTop: "20px" }}>
+      <Helmet>
+        <title>Profile | Trust Group</title>
+        <meta name='description' content='Profile to have access!' />
+      </Helmet>
       <Container maxWidth='lg'>
         <Typography variant='h4' gutterBottom>
           My Account

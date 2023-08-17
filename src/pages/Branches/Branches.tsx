@@ -20,33 +20,20 @@ import {
   DialogTitle,
   Typography,
   Pagination,
+  Stack,
   Skeleton,
   InputAdornment
 } from "@mui/material";
+import { Helmet } from "react-helmet-async";
 import { Search } from "@mui/icons-material";
 import { Branch } from "@/api/types";
 import { fetchBranches, createBranch, updateBranch, deleteBranch } from "@/api/branch.api";
+import MediaManager from "@/components/Media";
 
-// Schema for validating the branch object
 const branchSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
   address: yup.string().required("Address is required"),
-  image_url: yup
-    .mixed()
-    .test("fileType", "Invalid file type", function (value) {
-      if (!value) return true;
-      const validFormats = ["image/jpeg", "image/png"];
-      const fileType = (value as File).type;
-
-      return validFormats.includes(fileType);
-    })
-    .test("fileSize", "File size is too large", function (value) {
-      if (!value) return true;
-
-      const fileSizeInMB = (value as File).size / (1024 * 1024);
-      const maxSizeInMB = 20;
-      return fileSizeInMB <= maxSizeInMB;
-    })
+  image_url: yup.string().required("Address is required"),
 });
 
 // Function to render the image URL or file preview
@@ -108,9 +95,10 @@ const BranchComponent: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const branchesPerPage = 5;
+  const branchesPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -128,22 +116,6 @@ const BranchComponent: React.FC = () => {
     setCurrentPage(value);
   };
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setNewBranch((prevNewBranch) => ({
-        ...prevNewBranch,
-        image_url: prevNewBranch.image_url instanceof File ? prevNewBranch.image_url : file,
-      }));
-
-      if (selectedBranch) {
-        setSelectedBranch((prevSelectedBranch) => ({
-          ...(prevSelectedBranch as Branch),
-          image_url: prevSelectedBranch?.image_url instanceof File ? prevSelectedBranch.image_url : file,
-        }));
-      }
-    }
-  };
   const indexOfLastBranch = currentPage * branchesPerPage;
   const indexOfFirstBranch = indexOfLastBranch - branchesPerPage;
   const currentBranches = branches.slice(indexOfFirstBranch, indexOfLastBranch);
@@ -167,12 +139,14 @@ const BranchComponent: React.FC = () => {
       address: "",
       image_url: "",
     });
+    setSelectedImageUrl("");
     setOpen(true);
   };
 
   const openEditFormPopup = (branch: Branch) => {
     setSelectedBranch(branch);
     setNewBranch(branch);
+    setSelectedImageUrl(branch.image_url);
     setOpen(true);
   };
 
@@ -270,8 +244,20 @@ const BranchComponent: React.FC = () => {
     setBranchToDelete(null);
   };
 
+  const handleSelectedMedia = (media: any) => {
+    setSelectedImageUrl(media.image_url);
+    setNewBranch((prevNewBranch) => ({
+      ...prevNewBranch,
+      image_url: media.image_url,
+    }));
+  };
+
   return (
     <div>
+      <Helmet>
+        <title>Branches | Trust Group</title>
+        <meta name='description' content='Branches to have access!' />
+      </Helmet>
       <Typography variant="h3" mb={"3rem"}>
         Branches List
       </Typography>
@@ -282,7 +268,6 @@ const BranchComponent: React.FC = () => {
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
-          sx={{ marginBottom: "2rem" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -319,14 +304,14 @@ const BranchComponent: React.FC = () => {
                   <TableCell>{branch.address}</TableCell>
                   <TableCell className="max-w-[30rem] break-words">{renderImageUrl(branch.image_url)}</TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center justify-end gap-5">
+                    <Stack direction="row" spacing={2} justifyContent={"end"}>
                       <Button variant="contained" color="primary" onClick={() => openEditFormPopup(branch)}>
                         Edit
                       </Button>
                       <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(branch)}>
                         Delete
                       </Button>
-                    </div>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))
@@ -382,15 +367,15 @@ const BranchComponent: React.FC = () => {
             helperText={newBranch.errors?.address}
             sx={{ marginBottom: "2rem" }}
           />
-          {selectedBranch && selectedBranch.image_url && (
-            <>
-              {renderImageUrl(selectedBranch.image_url)}
-              {newBranch.errors?.image_url && (
-                <div className="error-text">{newBranch.errors.image_url}</div>
-              )}
-            </>
+          {selectedImageUrl && (
+            <div>
+              <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
+              <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
+                <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+              </div>
+            </div>
           )}
-          <input type="file" onChange={handleFileChange} />
+          <MediaManager onMediaSelect={handleSelectedMedia} />
         </DialogContent>
         <DialogActions className="!p-10">
           {selectedBranch ? (

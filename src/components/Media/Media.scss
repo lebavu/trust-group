@@ -1,0 +1,78 @@
+.image-button{
+  position: relative;
+  padding-top: 100%;
+  overflow: hidden;
+  width: 100%;
+  border: 1px solid rgba(0,0,0,.1);;
+  img{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  &:before{
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(#000,.6);
+    opacity: 0;
+    transition: all .3s;
+    z-index: 1;
+  }
+  &::after{
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%) rotate(-45deg) scale(0);
+    width: 1.4rem;
+    height: .8rem;
+    z-index: 2;
+    border-bottom: solid .2rem var(--secondary);
+    border-left: solid .2rem var(--secondary);
+    transition: all .4s;
+
+  }
+}
+.item{
+  &.selected{
+    .image-button{
+      transition: all .3s;
+      box-shadow: 0 0 0 .25rem var(--primary);
+      &:before{
+        opacity: 1;
+      }
+      &:after{
+        transform: translate(-50%,-50%) rotate(-45deg) scale(1);
+      }
+    }
+  }
+}
+.MuiDialogContent-root{
+  display: flex;
+  .content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    width: 100%;
+  }
+  .react-tabs{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    .react-tabs__tab-list{
+      flex-shrink: 0;
+    }
+    .react-tabs__tab-panel{
+      flex: 1;
+      height: 100%;
+      > div{
+        width: 100%;
+        flex-grow: 1;
+        height: 100%;
+      }
+    }
+  }
+}

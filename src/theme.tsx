@@ -15,15 +15,15 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontSize: 19.6, // Set the base font size
+    fontSize: 19.6,
     h2: {
-      fontSize: "2.8rem", // Customize heading level 1
+      fontSize: "2.8rem",
       fontWeight: 700,
       color: "#000",
       lineHeight: "calc(48/28)",
     },
     h3: {
-      fontSize: "2.4rem", // Customize heading level 2
+      fontSize: "2.4rem",
       lineHeight: "calc(28 / 24)",
       color: "#000",
       fontWeight: 700,
@@ -34,15 +34,24 @@ const theme = createTheme({
       fontWeight: "700",
     },
     h5: {
-      fontSize: "2rem", // Customize heading level 2
+      fontSize: "2rem",
       fontWeight: 500,
     },
     h6: {
-      fontSize: "1.8rem", // Customize heading level 2
+      fontSize: "1.8rem",
       fontWeight: 500,
     },
-    // Add more heading levels and customize as needed
-    // ...
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          "&.MuiButton-containedSecondary": {
+            color: "#fff"
+          },
+        },
+      },
+    },
   },
 });
 

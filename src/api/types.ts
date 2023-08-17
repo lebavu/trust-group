@@ -43,6 +43,7 @@ export interface UserResponse {
   profile_image: string;
   handphone_number: string;
   role_id: string;
+  password: string;
   verified_code_forgot: string;
   user: IUser;
   created_at: string;
@@ -60,7 +61,7 @@ export interface Branch {
   id: string;
   name: string;
   address: string;
-  image_url: string | File;
+  image_url: string;
   errors?: {
     name?: string;
     address?: string;
@@ -72,7 +73,7 @@ export interface User {
   handphone_number: string;
   name: string;
   email: string;
-  profile_image: string | File;
+  profile_image: string;
   role_id: string;
   password: string;
   verified_code_forgot: string;
@@ -90,12 +91,36 @@ export interface User {
 export interface PawnTickets {
   id: string;
   user_id: string;
-  date_time: Date;
-  details: string;
+  name: string;
+  pawn_status: string;
+  ticket_no: string;
+  pawn_type: number;
+  pawn_amount: string;
+  interest_payable: string;
+  downloan_amount: string;
+  monthly_repayment: string;
+  already_paid: string;
+  balance_remaining: string;
+  duration: string;
+  pawn_date: Date | null | string;
+  next_renewal: Date | null | string;
+  expiry_date: Date | null | string;
   errors?: {
     user_id?: string;
-    date_time?: string;
-    details?: string;
+    name?: string;
+    pawn_status?: string;
+    ticket_no?: string;
+    pawn_type?: number;
+    pawn_amount?: string;
+    interest_payable?: string;
+    downloan_amount?: string;
+    monthly_repayment?: string;
+    already_paid?: string;
+    balance_remaining?: string;
+    duration?: string;
+    pawn_date?: Date | null | string;
+    next_renewal?: Date | null | string;
+    expiry_date?: Date | null | string;
   };
 }
 
@@ -118,3 +143,67 @@ export type EValuationCategoryFormData = {
   desc: string;
   parent: string
 };
+export interface EValuationCategoryResponse {
+  status: string;
+  data: {
+    data: EValuationCategory[];
+  };
+}
+//role type
+export interface Role {
+  id: string;
+  name: string;
+  role: string;
+  errors?: {
+    name?: string;
+    role?: string;
+  };
+}
+
+//media
+export interface Media{
+  id: number;
+  image_url: string;
+  created_at: string;
+  updated_at: string;
+  errors?: {
+    image_url?: string;
+  };
+}
+
+//e-valuation
+export interface EValuation{
+  id: string;
+  user_id: string;
+  category_id: string;
+  status: string;
+  name: string;
+  price: string;
+  image: string;
+  type: string;
+  metal: string;
+  size: string;
+  weight: string;
+  other_remarks: string;
+  content: string;
+  date: Date | null;
+  appointment_date: Date | null
+  branch_id: string;
+  errors?: {
+    user_id?: string;
+    category_id?: string;
+    status?: string;
+    name?: string;
+    price?: string;
+    image?: string;
+    type?: string;
+    metal?: string;
+    size?: string;
+    weight?: string;
+    other_remarks?: string;
+    content?: string;
+    date?: Date | null;
+    appointment_date?: Date | null
+    branch_id?: string;
+  };
+}
