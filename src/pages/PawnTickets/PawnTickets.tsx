@@ -271,21 +271,23 @@ const PawnTicketComponent: React.FC = () => {
       already_paid: "",
       balance_remaining: "",
       duration: "",
-      pawn_date: fullFormattedDateTime,
-      next_renewal: fullFormattedDateTime,
-      expiry_date: fullFormattedDateTime,
+      pawn_date: "",
+      next_renewal: "",
+      expiry_date: "",
     });
     setOpen(true);
   };
 
   const openEditFormPopup = (pawnTicket: PawnTickets) => {
     setSelectedPawnTicket(pawnTicket);
-    const modifiedPawnTicket: PawnTickets = {
-      ...pawnTicket,
-      pawn_type: 1
-    };
+    // const modifiedPawnTicket: PawnTickets = {
+    //   ...pawnTicket,
+    //   pawn_type: 1
+    // };
 
-    setNewPawnTicket(modifiedPawnTicket);
+    setNewPawnTicket({
+      ...pawnTicket
+    });
     setOpen(true);
   };
 
@@ -322,9 +324,9 @@ const PawnTicketComponent: React.FC = () => {
         already_paid: "",
         balance_remaining: "",
         duration: "",
-        pawn_date: fullFormattedDateTime,
-        next_renewal: fullFormattedDateTime,
-        expiry_date: fullFormattedDateTime,
+        pawn_date: "",
+        next_renewal: "",
+        expiry_date: "",
       });
       setOpen(false);
     } catch (err: any) {
@@ -361,12 +363,11 @@ const PawnTicketComponent: React.FC = () => {
         already_paid: newPawnTicket.already_paid || selectedPawnTicket?.already_paid || "",
         balance_remaining: newPawnTicket.balance_remaining || selectedPawnTicket?.balance_remaining || "",
         duration: newPawnTicket.duration || selectedPawnTicket?.duration || "",
-        pawn_date: newPawnTicket.pawn_date || selectedPawnTicket?.pawn_date || new Date(),
-        next_renewal: newPawnTicket.next_renewal || selectedPawnTicket?.next_renewal || new Date(),
-        expiry_date: newPawnTicket.expiry_date || selectedPawnTicket?.expiry_date || new Date(),
+        pawn_date: newPawnTicket.pawn_date || selectedPawnTicket?.pawn_date || "",
+        next_renewal: newPawnTicket.next_renewal || selectedPawnTicket?.next_renewal || "",
+        expiry_date: newPawnTicket.expiry_date || selectedPawnTicket?.expiry_date || "",
       };
       await updatePawnTicketMutation.mutateAsync(updatedPawnTicket);
-
       setSelectedPawnTicket(null);
       setOpen(false);
 
@@ -384,9 +385,9 @@ const PawnTicketComponent: React.FC = () => {
         already_paid: "",
         balance_remaining: "",
         duration: "",
-        pawn_date: new Date(),
-        next_renewal: new Date(),
-        expiry_date: new Date(),
+        pawn_date: "",
+        next_renewal: "",
+        expiry_date: "",
         errors: {},
       });
     } catch (err: any) {
@@ -459,7 +460,7 @@ const PawnTicketComponent: React.FC = () => {
             id="simple-select-filter"
             size="small"
             label="All Users"
-            value={selectedUserIdFilter} // Sử dụng selectedRoleId
+            value={selectedUserIdFilter}
             onChange={(event) => setSelectedUserIdFilter(event.target.value)}
           >
             <MenuItem value="">All Roles</MenuItem>
@@ -623,7 +624,6 @@ const PawnTicketComponent: React.FC = () => {
               onChange={handleInputChange}
               variant="outlined"
               size="small"
-              rows={4}
               fullWidth
               error={!!newPawnTicket.errors?.name}
               helperText={newPawnTicket.errors?.name}
@@ -658,7 +658,6 @@ const PawnTicketComponent: React.FC = () => {
               onChange={handleInputChange}
               variant="outlined"
               size="small"
-              rows={4}
               fullWidth
               error={!!newPawnTicket.errors?.ticket_no}
               helperText={newPawnTicket.errors?.ticket_no}
@@ -686,7 +685,6 @@ const PawnTicketComponent: React.FC = () => {
               variant="outlined"
               type="number"
               size="small"
-              rows={4}
               fullWidth
               error={!!newPawnTicket.errors?.interest_payable}
               helperText={newPawnTicket.errors?.interest_payable}
@@ -713,7 +711,6 @@ const PawnTicketComponent: React.FC = () => {
               variant="outlined"
               size="small"
               type="number"
-              rows={4}
               fullWidth
               error={!!newPawnTicket.errors?.monthly_repayment}
               helperText={newPawnTicket.errors?.monthly_repayment}
@@ -740,7 +737,6 @@ const PawnTicketComponent: React.FC = () => {
               onChange={handleInputChange}
               variant="outlined"
               size="small"
-              rows={4}
               fullWidth
               error={!!newPawnTicket.errors?.balance_remaining}
               helperText={newPawnTicket.errors?.balance_remaining}
@@ -752,13 +748,28 @@ const PawnTicketComponent: React.FC = () => {
                 label="Pawn Date"
                 value={newPawnTicket.pawn_date}
                 onChange={(newValue) => {
-                  const event = {
-                    target: {
-                      name: "pawn_date",
-                      value: newValue ? newValue.toString().replace("T", " ").slice(0, 19) : ""
+                  if (newValue) {
+                    const parsedDate = new Date(newValue);
+                    if (!isNaN(parsedDate.getTime())) {
+                      const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+                        .toString()
+                        .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+                        .getHours()
+                        .toString()
+                        .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+                        .getSeconds()
+                        .toString()
+                        .padStart(2, "0")}`;
+
+                      const event = {
+                        target: {
+                          name: "pawn_date",
+                          value: formattedDate,
+                        },
+                      } as React.ChangeEvent<HTMLInputElement>;
+                      handleInputChange(event);
                     }
-                  } as React.ChangeEvent<HTMLInputElement>;
-                  handleInputChange(event);
+                  }
                 }}
               />
               {newPawnTicket.errors?.pawn_date && (
@@ -782,26 +793,56 @@ const PawnTicketComponent: React.FC = () => {
               label="Next Renewal"
               value={newPawnTicket.next_renewal}
               onChange={(newValue) => {
-                const event = {
-                  target: {
-                    name: "next_renewal",
-                    value: newValue ? newValue.toString().replace("T", " ").slice(0, 19) : ""
+                if (newValue) {
+                  const parsedDate = new Date(newValue);
+                  if (!isNaN(parsedDate.getTime())) {
+                    const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+                      .getHours()
+                      .toString()
+                      .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+                      .getSeconds()
+                      .toString()
+                      .padStart(2, "0")}`;
+
+                    const event = {
+                      target: {
+                        name: "next_renewal",
+                        value: formattedDate,
+                      },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    handleInputChange(event);
                   }
-                } as React.ChangeEvent<HTMLInputElement>;
-                handleInputChange(event);
+                }
               }}
             />
             <DateTime
               label="Expiry Date"
               value={newPawnTicket.expiry_date}
               onChange={(newValue) => {
-                const event = {
-                  target: {
-                    name: "expiry_date",
-                    value: newValue ? newValue.toString().replace("T", " ").slice(0, 19) : ""
+                if (newValue) {
+                  const parsedDate = new Date(newValue);
+                  if (!isNaN(parsedDate.getTime())) {
+                    const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+                      .toString()
+                      .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+                      .getHours()
+                      .toString()
+                      .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+                      .getSeconds()
+                      .toString()
+                      .padStart(2, "0")}`;
+
+                    const event = {
+                      target: {
+                        name: "expiry_date",
+                        value: formattedDate,
+                      },
+                    } as React.ChangeEvent<HTMLInputElement>;
+                    handleInputChange(event);
                   }
-                } as React.ChangeEvent<HTMLInputElement>;
-                handleInputChange(event);
+                }
               }}
             />
           </div>

@@ -15,7 +15,7 @@ interface DateTimeProps {
 const DateTime: React.FC<DateTimeProps> = ({ label, value, onChange }) => {
   return (
     <div>
-      <label className="mb-3 !font-medium !text-[1.4rem]">{label}</label>
+      <label className="!mb-3 block !font-medium !text-[1.3rem]">{label}</label>
       <DateTimePicker onChange={onChange} value={value} format="yyyy-MM-dd HH:mm:ss"/>
     </div>
   );

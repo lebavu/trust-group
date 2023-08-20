@@ -186,8 +186,8 @@ export interface EValuation{
   weight: string;
   other_remarks: string;
   content: string;
-  date: Date | null;
-  appointment_date: Date | null
+  date: Date | null | string;
+  appointment_date: Date | null | string
   branch_id: string;
   errors?: {
     user_id?: string;
@@ -202,8 +202,8 @@ export interface EValuation{
     weight?: string;
     other_remarks?: string;
     content?: string;
-    date?: Date | null;
-    appointment_date?: Date | null
+    date?: Date | null | string;
+    appointment_date?: Date | null | string
     branch_id?: string;
   };
 }

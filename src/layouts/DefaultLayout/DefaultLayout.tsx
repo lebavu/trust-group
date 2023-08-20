@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Outlet,Link } from "react-router-dom";
+import { Outlet,Link, useLocation } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import { type Theme } from "@mui/material";
 import { type CSSObject } from "@emotion/react";
@@ -90,6 +90,7 @@ function DefaultLayoutInner({ children }: Props) {
   const theme = useTheme();
   // const navigate = useNavigate();
   const open = useAppStore((state) => state.dopen);
+  const location = useLocation();
   return (
     <>
       <Navbar></Navbar>
@@ -112,7 +113,7 @@ function DefaultLayoutInner({ children }: Props) {
           <Divider />
           <List>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/branches">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/branches" ? "link-active" : ""}`} to="/branches">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -128,7 +129,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/e-valuation-categories">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/e-valuation-categories" ? "link-active" : ""}`} to="/e-valuation-categories">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -144,7 +145,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/evaluations">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/evaluations" ? "link-active" : ""}`} to="/evaluations">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -160,7 +161,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/blogs">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/blogs" ? "link-active" : ""}`} to="/blogs">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -176,7 +177,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/instalment-plans">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/instalment-plans" ? "link-active" : ""}`} to="/instalment-plans">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -192,7 +193,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/pawn-tickets">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/pawn-tickets" ? "link-active" : ""}`} to="/pawn-tickets">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -208,7 +209,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/product-categories">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/product-categories" ? "link-active" : ""}`} to="/product-categories">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -224,7 +225,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/products">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/products" ? "link-active" : ""}`} to="/products">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -240,7 +241,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/projects">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/projects" ? "link-active" : ""}`} to="/projects">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -256,7 +257,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/roles">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/roles" ? "link-active" : ""}`} to="/roles">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -272,7 +273,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/stories">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/stories" ? "link-active" : ""}`} to="/stories">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -288,7 +289,7 @@ function DefaultLayoutInner({ children }: Props) {
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className='flex w-full items-center gap-3' to="/users">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/users" ? "link-active" : ""}`} to="/users">
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{

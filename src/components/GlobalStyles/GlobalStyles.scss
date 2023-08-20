@@ -61,15 +61,17 @@ input,
   border: none;
 }
 
-a {
-  color: var(--text-color);
-  font-family: "Roboto", sans-serif;
-  text-decoration: none;
+.link{
   &:hover,
-  &.active {
-    color: var(--primary)!important;
+  &.link-active {
+    color: var(--secondary)!important;
+    text-stroke: .03rem currentColor;
+    -webkit-text-stroke: .03rem currentColor;
     > div{
-      color: #1e2f8d!important;
+      color: var(--secondary)!important;
+    }
+    svg{
+      fill: #5bb460;
     }
     .logo-tr{
       color: #fff!important;
