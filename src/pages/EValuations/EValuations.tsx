@@ -33,38 +33,12 @@ import {
 import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { EValuation } from "@/api/types";
-import { fetchEValuations, createEValuation, updateEValuation, deleteEValuation } from "@/api/e-valuation.api";
+import { fetchEValuations, createEValuation, deleteEValuation } from "@/api/e-valuation.api";
 import DateTime from "@/components/DateTime";
 import MediaManager from "@/components/Media";
 import http from "@/utils/http";
-
-const eValuationSchema = yup.object().shape({
-  user_id: yup.string().required("User is required"),
-  status: yup.string().required("Status is required"),
-  name: yup.string().required("Name is required"),
-  price: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Price amount must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (value === undefined) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Price amount must be a numeric value"),
-  image: yup.string().required("Image is required"),
-  // type: yup.string().required("Type is required"),
-  // metal: yup.string().required("Metal is required"),
-  // size: yup.string().required("Size is required"),
-  // weight: yup.string().required("Weight is required"),
-  // other_remarks: yup.string().required("Other Remarks is required"),
-  // content: yup.string().required("Content is required"),
-  date: yup.string().required("Date is required"),
-  // appointment_date: yup.string().required("Appointment Date is required"),
-});
+import { eValuationSchema } from "@/utils/rules";
+import { useNavigate } from "react-router-dom";
 
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
@@ -124,8 +98,9 @@ const BranchName: React.FC<{ branchId: string }> = ({ branchId }) => {
 
 const EValuationComponent: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: eValuations = [] } = useQuery<EValuation[]>("eValuations", fetchEValuations);
+  const navigate = useNavigate();
   const { data: users = [] } = useQuery("users", fetchUsers);
+  const { data: eValuations = [] } = useQuery<EValuation[]>("eValuations", fetchEValuations);
   const { data: branches = [] } = useQuery("branches", fetchBranches);
   const { data: categories = [] } = useQuery("categories", fetchCategories);
   const createEValuationMutation = useMutation(createEValuation, {
@@ -138,16 +113,6 @@ const EValuationComponent: React.FC = () => {
     },
   });
 
-  const updateEValuationMutation = useMutation(updateEValuation, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("eValuations");
-      toast.success("EValuation updated successfully.");
-    },
-    onError: () => {
-      toast.error("Failed to update EValuation.");
-    },
-  });
-
   const deleteEValuationMutation = useMutation(deleteEValuation, {
     onSuccess: () => {
       queryClient.invalidateQueries("eValuations");
@@ -157,16 +122,6 @@ const EValuationComponent: React.FC = () => {
       toast.error("Failed to delete EValuation.");
     },
   });
-
-  const date = new Date(); // This is the date you want to format
-  const formattedDate = date.toLocaleDateString("en-GB", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).split("/").reverse().join("-");;
-  const formattedTime = date.toLocaleTimeString("en-US", { hour12: false }); // 24-hour format
-
-  const fullFormattedDateTime = `${formattedDate} ${formattedTime}`;
 
   const [newEValuation, setNewEValuation] = useState<EValuation>({
     id: "",
@@ -182,8 +137,8 @@ const EValuationComponent: React.FC = () => {
     weight: "",
     other_remarks: "",
     content: "",
-    date: fullFormattedDateTime,
-    appointment_date: fullFormattedDateTime,
+    date: null,
+    appointment_date: null,
     branch_id: "",
   });
 
@@ -200,9 +155,35 @@ const EValuationComponent: React.FC = () => {
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     if (name === "date") {
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+
+          setNewEValuation((prevNewEValuation) => ({
+            ...prevNewEValuation,
+            date: formattedDate,
+          }));
+        }
+      }else{
+        setNewEValuation((prevNewEValuation) => ({
+          ...prevNewEValuation,
+          date: value,
+        }));
+      }
+    }  else if (name === "status") {
+      const intValue = parseInt(value, 10);
       setNewEValuation((prevNewEValuation) => ({
         ...prevNewEValuation,
-        date: value,
+        status: intValue,
       }));
     } else {
       setNewEValuation((prevNewEValuation) => ({
@@ -267,12 +248,7 @@ const EValuationComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (eValuation: EValuation) => {
-    setSelectedEValuation(eValuation);
-    setNewEValuation({
-      ...eValuation,
-    });
-    setSelectedImageUrl(eValuation.image);
-    setOpen(true);
+    navigate(`/update-e-valuation/${eValuation.id}`);
   };
 
   const closeFormPopup = () => {
@@ -308,80 +284,11 @@ const EValuationComponent: React.FC = () => {
         weight: "",
         other_remarks: "",
         content: "",
-        date: "",
-        appointment_date: "",
+        date: null,
+        appointment_date: null,
         branch_id: "",
       });
-      console.log(newEValuation);
       setOpen(false);
-    } catch (err: any) {
-      console.log(err);
-      const validationErrors: { [key: string]: string } = {};
-      if (yup.ValidationError.isError(err)) {
-        err.inner.forEach((e) => {
-          if (e.path) {
-            validationErrors[e.path] = e.message;
-          }
-        });
-      }
-      setNewEValuation((prevNewEValuation) => ({
-        ...prevNewEValuation,
-        errors: validationErrors,
-      }));
-    }
-  };
-
-  const handleUpdateEValuation = async () => {
-    try {
-      await eValuationSchema.validate(newEValuation, { abortEarly: false });
-
-      const updatedEValuation: EValuation = {
-        id: selectedEValuation?.id || "",
-        user_id: newEValuation.user_id || selectedEValuation?.user_id || "",
-        category_id: newEValuation.category_id || selectedEValuation?.category_id || "",
-        status: newEValuation.status || selectedEValuation?.status || "",
-        name: newEValuation.name || selectedEValuation?.name || "",
-        price: newEValuation.price || selectedEValuation?.price || "",
-        image: newEValuation.image || selectedEValuation?.image || "",
-        type: newEValuation.type || selectedEValuation?.type || "",
-        metal: newEValuation.metal || selectedEValuation?.metal || "",
-        size: newEValuation.size || selectedEValuation?.size || "",
-        weight: newEValuation.weight || selectedEValuation?.weight || "",
-        other_remarks: newEValuation.other_remarks || selectedEValuation?.other_remarks || "",
-        content: newEValuation.content || selectedEValuation?.content || "",
-        date: newEValuation.date || selectedEValuation?.date || null,
-        appointment_date: newEValuation.appointment_date || selectedEValuation?.appointment_date || null,
-        branch_id: newEValuation.branch_id || selectedEValuation?.branch_id || "",
-      };
-
-      if (!newEValuation.image) {
-        updatedEValuation.image = selectedEValuation?.image || "";
-      }
-
-      await updateEValuationMutation.mutateAsync(updatedEValuation);
-
-      setSelectedEValuation(null);
-      setOpen(false);
-
-      setNewEValuation({
-        id: "",
-        user_id: "",
-        category_id: "",
-        status: "",
-        name: "",
-        price: "",
-        image: "",
-        type: "",
-        metal: "",
-        size: "",
-        weight: "",
-        other_remarks: "",
-        content: "",
-        date: "",
-        appointment_date: "",
-        branch_id: "",
-        errors: {},
-      });
     } catch (err: any) {
       const validationErrors: { [key: string]: string } = {};
       if (yup.ValidationError.isError(err)) {
@@ -408,7 +315,8 @@ const EValuationComponent: React.FC = () => {
   const uniqueUserIds = Array.from(new Set(eValuations.map(eValuation => eValuation.user_id)));
   const EVStatusOptions = [
     { value: 0, label: "Pending" },
-    { value: 1, label: "Successful" },
+    { value: 1, label: "On Progress" },
+    { value: 2, label: "Completed" },
   ];
   return (
     <div>
@@ -531,7 +439,7 @@ const EValuationComponent: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {EVStatusOptions.find(option => option.value === parseInt(eValuation.status))?.label || "Unknown"}
+                    {EVStatusOptions.find(option => option.value == eValuation.status)?.label || "Unknown"}
                   </TableCell>
                   <TableCell>{eValuation.name}</TableCell>
                   <TableCell>{eValuation.price}</TableCell>
@@ -636,7 +544,7 @@ const EValuationComponent: React.FC = () => {
               <Select
                 name="status"
                 label="Status"
-                value={newEValuation.status}
+                value={newEValuation.status.toString()}
                 onChange={handleInputChange}
                 variant="outlined"
                 fullWidth
@@ -676,7 +584,12 @@ const EValuationComponent: React.FC = () => {
               error={!!newEValuation.errors?.price}
               helperText={newEValuation.errors?.price}
             />
-            <div>
+            <div className="flex flex-col gap-3">
+              <div>
+                <span className="!mb-3 block !font-medium !text-[1.3rem]"> Image:
+                </span>
+                <MediaManager onMediaSelect={handleSelectedMedia} />
+              </div>
               {selectedImageUrl && (
                 <div>
                   <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
@@ -685,11 +598,6 @@ const EValuationComponent: React.FC = () => {
                   </div>
                 </div>
               )}
-              <div>
-                <span className="!mb-3 block !font-medium !text-[1.3rem]"> Image:
-                </span>
-                <MediaManager onMediaSelect={handleSelectedMedia} />
-              </div>
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
@@ -770,28 +678,13 @@ const EValuationComponent: React.FC = () => {
                 label="Date"
                 value={newEValuation.date}
                 onChange={(newValue) => {
-                  if (newValue) {
-                    const parsedDate = new Date(newValue);
-                    if (!isNaN(parsedDate.getTime())) {
-                      const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
-                        .getHours()
-                        .toString()
-                        .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
-                        .getSeconds()
-                        .toString()
-                        .padStart(2, "0")}`;
-
-                      const event = {
-                        target: {
-                          name: "date",
-                          value: formattedDate,
-                        },
-                      } as React.ChangeEvent<HTMLInputElement>;
-                      handleInputChange(event);
-                    }
-                  }
+                  const event = {
+                    target: {
+                      name: "date",
+                      value: newValue instanceof Date ? newValue.toISOString() : null,
+                    },
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  handleInputChange(event);
                 }}
               />
               {newEValuation.errors?.date && (
@@ -803,28 +696,13 @@ const EValuationComponent: React.FC = () => {
                 label="Appointment Date"
                 value={newEValuation.appointment_date}
                 onChange={(newValue) => {
-                  if (newValue) {
-                    const parsedDate = new Date(newValue);
-                    if (!isNaN(parsedDate.getTime())) {
-                      const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
-                        .getHours()
-                        .toString()
-                        .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
-                        .getSeconds()
-                        .toString()
-                        .padStart(2, "0")}`;
-
-                      const event = {
-                        target: {
-                          name: "appointment_date",
-                          value: formattedDate,
-                        },
-                      } as React.ChangeEvent<HTMLInputElement>;
-                      handleInputChange(event);
-                    }
-                  }
+                  const event = {
+                    target: {
+                      name: "appointment_date",
+                      value: newValue instanceof Date ? newValue.toISOString() : null,
+                    },
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  handleInputChange(event);
                 }}
               />
               {newEValuation.errors?.appointment_date && (
@@ -856,25 +734,12 @@ const EValuationComponent: React.FC = () => {
           </div>
         </DialogContent>
         <DialogActions className="!p-10">
-          {selectedEValuation ? (
-            <>
-              <Button variant="contained" color="primary" onClick={handleUpdateEValuation}>
-                Update
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="contained" color="primary" onClick={handleCreateEValuation}>
-                Create
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          )}
+          <Button variant="contained" color="primary" onClick={handleCreateEValuation}>
+            Create
+          </Button>
+          <Button variant="contained" color="secondary" onClick={closeFormPopup}>
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
       <Dialog open={deleteConfirmationOpen} onClose={closeDeleteConfirmation}>

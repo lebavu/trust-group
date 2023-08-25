@@ -33,103 +33,20 @@ import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { PawnTickets } from "@/api/types";
 import { Helmet } from "react-helmet-async";
-import { fetchPawnTickets, createPawnTicket, updatePawnTicket, deletePawnTicket } from "@/api/pawn_ticket.api";
+import { useNavigate } from "react-router-dom";
+import { fetchPawnTickets, createPawnTicket, deletePawnTicket } from "@/api/pawn_ticket.api";
 import DateTime from "@/components/DateTime";
 import http from "@/utils/http";
+import { pawnTicketSchema } from "@/utils/rules";
 
-const pawnTicketSchema = yup.object().shape({
-  user_id: yup.string().required("User is required"),
-  name: yup.string().required("Name time is required"),
-  ticket_no: yup.string().required("Ticket No is required"),
-  pawn_type: yup.number().required("Pawn type is required"),
-  pawn_amount: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Pawn amount must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (value === undefined) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Pawn amount must be a numeric value"),
-  interest_payable: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Interest Payable must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (!value) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Interest Payable must be a numeric value"),
-  downloan_amount: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Downloan amount must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (!value) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Downloan amount must be a numeric value"),
-  monthly_repayment: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Monthly repayment must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (!value) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Monthly repayment must be a numeric value"),
-  already_paid: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Already paid must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (!value) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Already paid must be a numeric value"),
-  balance_remaining: yup
-    .mixed()
-    .test(
-      "is-decimal-10-2",
-      "Balance remaining must be in the format of DECIMAL(10,2)",
-      function (value) {
-        if (!value) {
-          return true;
-        }
-        return /^[0-9]{1,7}\.[0-9]{2}$/.test(value.toString());
-      }
-    )
-    .typeError("Balance remaining must be a numeric value"),
-  pawn_date: yup.string().required("pawn_date is required"),
-});
-const fetchUsers = async () => {
-  const response = await http.get("users");
-  return response.data.data;
-};
 
 const fetchUserName = async (userId: string) => {
   const response = await http.get(`users/${userId}`);
   return response.data.data.name;
+};
+const fetchUsers = async () => {
+  const response = await http.get("users");
+  return response.data.data;
 };
 
 const UserName: React.FC<{ userId: string }> = ({ userId }) => {
@@ -139,6 +56,7 @@ const UserName: React.FC<{ userId: string }> = ({ userId }) => {
 
 const PawnTicketComponent: React.FC = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: pawnTickets = [] } = useQuery<PawnTickets[]>("pawn_tickets", fetchPawnTickets);
   const { data: users = [] } = useQuery("users", fetchUsers);
@@ -150,16 +68,6 @@ const PawnTicketComponent: React.FC = () => {
     },
     onError: () => {
       toast.error("Failed to create pawn ticket.");
-    },
-  });
-
-  const updatePawnTicketMutation = useMutation(updatePawnTicket, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("pawn_tickets");
-      toast.success("Pawn ticket updated successfully.");
-    },
-    onError: () => {
-      toast.error("Failed to update pawn ticket.");
     },
   });
 
@@ -214,10 +122,30 @@ const PawnTicketComponent: React.FC = () => {
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
     if (name === "date") {
-      setNewPawnTicket((prevNewPawnTicket) => ({
-        ...prevNewPawnTicket,
-        date: value,
-      }));
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+
+          setNewPawnTicket((prevNewPawnTicket) => ({
+            ...prevNewPawnTicket,
+            date: formattedDate,
+          }));
+        }
+      }else{
+        setNewPawnTicket((prevNewPawnTicket) => ({
+          ...prevNewPawnTicket,
+          date: value,
+        }));
+      }
     } else if (name === "pawn_type") {
       const intValue = parseInt(value, 10);
       setNewPawnTicket((prevNewPawnTicket) => ({
@@ -279,16 +207,7 @@ const PawnTicketComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (pawnTicket: PawnTickets) => {
-    setSelectedPawnTicket(pawnTicket);
-    // const modifiedPawnTicket: PawnTickets = {
-    //   ...pawnTicket,
-    //   pawn_type: 1
-    // };
-
-    setNewPawnTicket({
-      ...pawnTicket
-    });
-    setOpen(true);
+    navigate(`/update-pawn-ticket/${pawnTicket.id}`);
   };
 
   const closeFormPopup = () => {
@@ -329,67 +248,6 @@ const PawnTicketComponent: React.FC = () => {
         expiry_date: "",
       });
       setOpen(false);
-    } catch (err: any) {
-      const validationErrors: { [key: string]: string } = {};
-      if (yup.ValidationError.isError(err)) {
-        err.inner.forEach((e) => {
-          if (e.path) {
-            validationErrors[e.path] = e.message;
-          }
-        });
-      }
-      setNewPawnTicket((prevNewPawnTicket) => ({
-        ...prevNewPawnTicket,
-        errors: validationErrors,
-      }));
-    }
-  };
-
-  const handleUpdatePawnTicket = async () => {
-    try {
-      await pawnTicketSchema.validate(newPawnTicket, { abortEarly: false });
-
-      const updatedPawnTicket: PawnTickets = {
-        id: selectedPawnTicket?.id || "",
-        user_id: newPawnTicket.user_id || selectedPawnTicket?.user_id || "",
-        name: newPawnTicket.name || selectedPawnTicket?.name || "",
-        pawn_status: newPawnTicket.pawn_status || selectedPawnTicket?.pawn_status || "",
-        ticket_no: newPawnTicket.ticket_no || selectedPawnTicket?.ticket_no || "",
-        pawn_type: newPawnTicket.pawn_type || selectedPawnTicket?.pawn_type || 0,
-        pawn_amount: newPawnTicket.pawn_amount || selectedPawnTicket?.pawn_amount || "",
-        interest_payable: newPawnTicket.interest_payable || selectedPawnTicket?.interest_payable || "",
-        downloan_amount: newPawnTicket.downloan_amount || selectedPawnTicket?.downloan_amount || "",
-        monthly_repayment: newPawnTicket.monthly_repayment || selectedPawnTicket?.monthly_repayment || "",
-        already_paid: newPawnTicket.already_paid || selectedPawnTicket?.already_paid || "",
-        balance_remaining: newPawnTicket.balance_remaining || selectedPawnTicket?.balance_remaining || "",
-        duration: newPawnTicket.duration || selectedPawnTicket?.duration || "",
-        pawn_date: newPawnTicket.pawn_date || selectedPawnTicket?.pawn_date || "",
-        next_renewal: newPawnTicket.next_renewal || selectedPawnTicket?.next_renewal || "",
-        expiry_date: newPawnTicket.expiry_date || selectedPawnTicket?.expiry_date || "",
-      };
-      await updatePawnTicketMutation.mutateAsync(updatedPawnTicket);
-      setSelectedPawnTicket(null);
-      setOpen(false);
-
-      setNewPawnTicket({
-        id: "",
-        user_id: "",
-        name: "",
-        pawn_status: "",
-        ticket_no: "",
-        pawn_type: 0,
-        pawn_amount: "",
-        interest_payable: "",
-        downloan_amount: "",
-        monthly_repayment: "",
-        already_paid: "",
-        balance_remaining: "",
-        duration: "",
-        pawn_date: "",
-        next_renewal: "",
-        expiry_date: "",
-        errors: {},
-      });
     } catch (err: any) {
       const validationErrors: { [key: string]: string } = {};
       if (yup.ValidationError.isError(err)) {
@@ -748,28 +606,13 @@ const PawnTicketComponent: React.FC = () => {
                 label="Pawn Date"
                 value={newPawnTicket.pawn_date}
                 onChange={(newValue) => {
-                  if (newValue) {
-                    const parsedDate = new Date(newValue);
-                    if (!isNaN(parsedDate.getTime())) {
-                      const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
-                        .toString()
-                        .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
-                        .getHours()
-                        .toString()
-                        .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
-                        .getSeconds()
-                        .toString()
-                        .padStart(2, "0")}`;
-
-                      const event = {
-                        target: {
-                          name: "pawn_date",
-                          value: formattedDate,
-                        },
-                      } as React.ChangeEvent<HTMLInputElement>;
-                      handleInputChange(event);
-                    }
-                  }
+                  const event = {
+                    target: {
+                      name: "pawn_date",
+                      value: newValue instanceof Date ? newValue.toISOString() : null,
+                    },
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  handleInputChange(event);
                 }}
               />
               {newPawnTicket.errors?.pawn_date && (
@@ -793,80 +636,37 @@ const PawnTicketComponent: React.FC = () => {
               label="Next Renewal"
               value={newPawnTicket.next_renewal}
               onChange={(newValue) => {
-                if (newValue) {
-                  const parsedDate = new Date(newValue);
-                  if (!isNaN(parsedDate.getTime())) {
-                    const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
-                      .toString()
-                      .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
-                      .getHours()
-                      .toString()
-                      .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
-                      .getSeconds()
-                      .toString()
-                      .padStart(2, "0")}`;
-
-                    const event = {
-                      target: {
-                        name: "next_renewal",
-                        value: formattedDate,
-                      },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    handleInputChange(event);
-                  }
-                }
+                const event = {
+                  target: {
+                    name: "next_renewal",
+                    value: newValue instanceof Date ? newValue.toISOString() : null,
+                  },
+                } as React.ChangeEvent<HTMLInputElement>;
+                handleInputChange(event);
               }}
             />
             <DateTime
               label="Expiry Date"
               value={newPawnTicket.expiry_date}
               onChange={(newValue) => {
-                if (newValue) {
-                  const parsedDate = new Date(newValue);
-                  if (!isNaN(parsedDate.getTime())) {
-                    const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
-                      .toString()
-                      .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
-                      .getHours()
-                      .toString()
-                      .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
-                      .getSeconds()
-                      .toString()
-                      .padStart(2, "0")}`;
-
-                    const event = {
-                      target: {
-                        name: "expiry_date",
-                        value: formattedDate,
-                      },
-                    } as React.ChangeEvent<HTMLInputElement>;
-                    handleInputChange(event);
-                  }
-                }
+                const event = {
+                  target: {
+                    name: "expiry_date",
+                    value: newValue instanceof Date ? newValue.toISOString() : null,
+                  },
+                } as React.ChangeEvent<HTMLInputElement>;
+                handleInputChange(event);
               }}
             />
           </div>
         </DialogContent>
         <DialogActions className="!p-10">
-          {selectedPawnTicket ? (
-            <>
-              <Button variant="contained" color="primary" onClick={handleUpdatePawnTicket}>
-                Update
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="contained" color="primary" onClick={handleCreatePawnTicket}>
-                Create
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          )}
+          <Button variant="contained" color="primary" onClick={handleCreatePawnTicket}>
+            Create
+          </Button>
+          <Button variant="contained" color="secondary" onClick={closeFormPopup}>
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
       <Dialog open={deleteConfirmationOpen} onClose={closeDeleteConfirmation}>

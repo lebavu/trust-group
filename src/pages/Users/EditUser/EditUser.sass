@@ -1,0 +1,69 @@
+.tabs
+  .MuiTabs-flexContainer
+    flex-direction: column
+    button
+      text-align: left
+      justify-content: flex-start
+      align-items: flex-start
+      font-size: 1.4rem
+      text-transform: capitalize
+  .MuiTabs-indicator
+    display: none
+.info-box
+  display: flex
+  align-items: center
+  padding: 4rem 1.5rem 2.5rem 1.5rem
+  .image
+    width: 8rem
+    height: 8rem
+    flex-shrink: 0
+    border-radius: 50%
+    overflow: hidden
+    background: rgba(#000,.1)
+    img
+      width: 100%
+      height: 100%
+      object-fit: cover
+  .name
+    padding-left: 1.5rem
+    font-size: 1.4rem
+    color: var(--primary)
+    font-weight: bold
+.upload-box
+  @media (min-width: 768px)
+    border-left: 1px solid rgba(0, 0, 0, 0.1)
+    margin-left: 3rem
+    padding-left: 3rem
+  @media (max-width: 767px)
+    margin-bottom: 3rem
+.update-user-wrapper
+  border: 1px solid rgba(0, 0, 0, 0.1)
+  padding: 3rem
+  text-transform: capitalize
+.password-form
+  display: flex
+  margin-top: 1.5rem
+  .password-input
+    position: relative
+    input
+      padding: 0 14px
+      height: 37px
+      width: 100%
+      max-width: 30rem
+      border-radius: 3px
+      border: 1px solid rgba(0, 0, 0, 0.23)
+      position: relative
+      padding-right: 4rem
+    .toggle-pass
+      position: absolute
+      top: 50%
+      transform: translateY(-50%)
+      right: 14px
+      z-index: 1
+      svg
+        font-size: 1.8rem
+        color: var(--primary)
+  .generate
+    color: var(--primary)
+    text-decoration: underline
+    margin-left: 1rem

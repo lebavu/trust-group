@@ -75,7 +75,7 @@ export interface User {
   email: string;
   profile_image: string;
   role_id: string;
-  password: string;
+  new_password: string;
   verified_code_forgot: string;
   errors?: {
     name?: string;
@@ -83,7 +83,7 @@ export interface User {
     profile_image?: string;
     handphone_number?: string;
     role_id?: string;
-    password?: string;
+    new_password?: string;
     verified_code_forgot?: string;
   };
 }
@@ -176,7 +176,7 @@ export interface EValuation{
   id: string;
   user_id: string;
   category_id: string;
-  status: string;
+  status: number | string;
   name: string;
   price: string;
   image: string;
@@ -192,7 +192,7 @@ export interface EValuation{
   errors?: {
     user_id?: string;
     category_id?: string;
-    status?: string;
+    status?: number | string;
     name?: string;
     price?: string;
     image?: string;
@@ -207,3 +207,4 @@ export interface EValuation{
     branch_id?: string;
   };
 }
+

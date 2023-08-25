@@ -12,12 +12,15 @@ const Blogs = lazy(() => import("@/pages/Blogs"));
 const Home = lazy(() => import("@/pages/Home"));
 const Branches = lazy(() => import("@/pages/Branches"));
 const Users = lazy(() => import("@/pages/Users"));
+const UpdateUser = lazy(() => import("@/pages/Users/EditUser"));
 const EValuations = lazy(() => import("@/pages/EValuations"));
+const UpdateEValuation = lazy(() => import("@/pages/EValuations/Update"));
 const EValuationCategories = lazy(() => import("@/pages/EValuationCategories"));
 const ProductCategories = lazy(() => import("@/pages/ProductCategories"));
 const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
 const InstalmentPlans = lazy(() => import("@/pages/InstalmentPlans"));
 const PawnTickets = lazy(() => import("@/pages/PawnTickets"));
+const UpdatePawnTicket = lazy(() => import("@/pages/PawnTickets/Update"));
 const Products = lazy(() => import("@/pages/Products"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Projects = lazy(() => import("@/pages/Projects"));
@@ -81,6 +84,16 @@ export default function useRouteElements() {
       path: "",
       element: <ProtectedRoute />,
       children: [
+        {
+          path: path.UpdateUser,
+          element: (
+            <MainLayout>
+              <Suspense>
+                <UpdateUser />
+              </Suspense>
+            </MainLayout>
+          )
+        },
         {
           path: path.Users,
           element: (
@@ -151,6 +164,14 @@ export default function useRouteElements() {
           )
         },
         {
+          path: path.UpdateEValuation,
+          element: (
+            <Suspense>
+              <UpdateEValuation />
+            </Suspense>
+          )
+        },
+        {
           path: path.EValuationCategories,
           element: (
             <Suspense>
@@ -179,6 +200,14 @@ export default function useRouteElements() {
           element: (
             <Suspense>
               <PawnTickets />
+            </Suspense>
+          )
+        },
+        {
+          path: path.UpdatePawnTicket,
+          element: (
+            <Suspense>
+              <UpdatePawnTicket />
             </Suspense>
           )
         },

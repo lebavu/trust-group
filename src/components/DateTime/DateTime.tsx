@@ -4,12 +4,12 @@ import "react-calendar/dist/Calendar.css";
 import "react-clock/dist/Clock.css";
 import "./DateTime.sass";
 
-type ValuePiece = string | Date | null;
+type ValuePiece = Date | null | string;
 
 interface DateTimeProps {
   label: string;
   value: ValuePiece;
-  onChange: (newValue: string | Date | null) => void;
+  onChange: (newValue: Date | null | string) => void;
 }
 
 const DateTime: React.FC<DateTimeProps> = ({ label, value, onChange }) => {

@@ -32,10 +32,11 @@ import {
 import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { User } from "@/api/types";
-import { fetchUsers, createUser, updateUser, deleteUser } from "@/api/user.api";
+import { fetchUsers, createUser, deleteUser } from "@/api/user.api";
 import MediaManager from "@/components/Media";
 import http from "@/utils/http";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 
 const userSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -43,15 +44,9 @@ const userSchema = yup.object().shape({
   profile_image: yup.string().required("Profile image is required"),
   handphone_number: yup.string().required("Handphone Number is required"),
   role_id: yup.string().required("Role is required"),
-  password: yup
-    .string()
-    .required("Password is required")
-    .min(6, "Password must be more than 6 characters")
-    .max(32, "Password must be less than 32 characters"),
   verified_code_forgot: yup.string(),
 });
 
-// Function to render the image URL or file preview
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
     return <img src={imageUrl} alt="User" style={{ width: "5rem" }} />;
@@ -80,6 +75,7 @@ const RoleName: React.FC<{ roleId: string }> = ({ roleId }) => {
 
 const UserComponent: React.FC = () => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const { data: users = [] } = useQuery<User[]>("users", fetchUsers);
   const { data: roles = [] } = useQuery("roles", fetchRoles);
@@ -91,16 +87,6 @@ const UserComponent: React.FC = () => {
     },
     onError: () => {
       toast.error("Failed to create user.");
-    },
-  });
-
-  const updateUserMutation = useMutation(updateUser, {
-    onSuccess: () => {
-      queryClient.invalidateQueries("users");
-      toast.success("User updated successfully.");
-    },
-    onError: () => {
-      toast.error("Failed to update user.");
     },
   });
 
@@ -120,11 +106,10 @@ const UserComponent: React.FC = () => {
     profile_image: "",
     handphone_number: "",
     role_id: "",
-    password: "",
+    new_password: "",
     verified_code_forgot: ""
   });
 
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -164,7 +149,6 @@ const UserComponent: React.FC = () => {
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = users ? users.slice(indexOfFirstUser, indexOfLastUser) : [];
-
   const filteredUsers = currentUsers.filter((user) => {
     const isMatchingRole = !selectedRoleIdFilter || user.role_id === selectedRoleIdFilter;
 
@@ -179,7 +163,6 @@ const UserComponent: React.FC = () => {
   const totalPages = Math.ceil(users.length / usersPerPage);
 
   const openFormPopup = () => {
-    setSelectedUser(null);
     setNewUser({
       id: "",
       name: "",
@@ -187,7 +170,7 @@ const UserComponent: React.FC = () => {
       profile_image: "",
       handphone_number: "",
       role_id: "",
-      password: "",
+      new_password: "",
       verified_code_forgot: ""
     });
     setSelectedImageUrl("");
@@ -195,17 +178,10 @@ const UserComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (user: User) => {
-    setSelectedUser(user);
-    setNewUser({
-      ...user,
-      role_id: user.role_id || "", // Set the selected role id
-    });
-    setSelectedImageUrl(user.profile_image);
-    setOpen(true);
+    navigate(`/update-user/${user.id}`);
   };
 
   const closeFormPopup = () => {
-    setSelectedUser(null);
     setOpen(false);
   };
 
@@ -236,63 +212,12 @@ const UserComponent: React.FC = () => {
         profile_image: "",
         handphone_number: "",
         role_id: "",
-        password: "",
+        new_password: "",
         verified_code_forgot: ""
       });
       setOpen(false);
     } catch (err: any) {
       console.error(err);
-      const validationErrors: { [key: string]: string } = {};
-      if (yup.ValidationError.isError(err)) {
-        err.inner.forEach((e) => {
-          if (e.path) {
-            validationErrors[e.path] = e.message;
-          }
-        });
-      }
-      setNewUser((prevNewUser) => ({
-        ...prevNewUser,
-        errors: validationErrors,
-      }));
-    }
-  };
-
-  const handleUpdateUser = async () => {
-    try {
-      await userSchema.validate(newUser, { abortEarly: false });
-
-      const updatedUser: User = {
-        id: selectedUser?.id || "",
-        name: newUser.name || selectedUser?.name || "",
-        email: newUser.email || selectedUser?.email || "",
-        handphone_number: newUser.handphone_number || selectedUser?.handphone_number || "",
-        role_id: newUser.role_id || selectedUser?.role_id || "",
-        password: newUser.password || selectedUser?.password || "",
-        verified_code_forgot: newUser.verified_code_forgot || selectedUser?.verified_code_forgot || "",
-        profile_image: newUser.profile_image || selectedUser?.profile_image || "",
-      };
-
-      if (!newUser.profile_image) {
-        updatedUser.profile_image = selectedUser?.profile_image || "";
-      }
-
-      await updateUserMutation.mutateAsync(updatedUser);
-
-      setSelectedUser(null);
-      setOpen(false);
-
-      setNewUser({
-        id: "",
-        name: "",
-        email: "",
-        profile_image: "",
-        handphone_number: "",
-        password: "",
-        role_id: "",
-        verified_code_forgot: "",
-        errors: {},
-      });
-    } catch (err: any) {
       const validationErrors: { [key: string]: string } = {};
       if (yup.ValidationError.isError(err)) {
         err.inner.forEach((e) => {
@@ -442,7 +367,7 @@ const UserComponent: React.FC = () => {
         />
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
-        <DialogTitle className="!pt-10">{selectedUser ? "Edit User" : "Create New User"}</DialogTitle>
+        <DialogTitle className="!pt-10"> Create New User </DialogTitle>
         <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
           <TextField
             name="name"
@@ -501,49 +426,26 @@ const UserComponent: React.FC = () => {
             </Select>
             {newUser.errors?.role_id && <FormHelperText error>{newUser.errors.role_id}</FormHelperText>}
           </FormControl>
-          <TextField
-            name="password"
-            label="Password"
-            size="small"
-            type="password"
-            value={newUser.password}
-            onChange={handleInputChange}
-            variant="outlined"
-            fullWidth
-            error={!!newUser.errors?.password}
-            helperText={newUser.errors?.password}
-            sx={{ marginBottom: "2rem" }}
-          />
-          {selectedImageUrl && (
-            <div>
-              <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
-              <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+          <div>
+            <p className="!mb-3 block !font-medium !text-[1.3rem]">Profile Image</p>
+            <MediaManager onMediaSelect={handleSelectedMedia} />
+            {selectedImageUrl && (
+              <div>
+                <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
+                <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
+                  <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                </div>
               </div>
-            </div>
-          )}
-          <MediaManager onMediaSelect={handleSelectedMedia} />
+            )}
+          </div>
         </DialogContent>
         <DialogActions className="!p-10">
-          {selectedUser ? (
-            <>
-              <Button variant="contained" color="primary" onClick={handleUpdateUser}>
-                Update
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="contained" color="primary" onClick={handleCreateUser}>
-                Create
-              </Button>
-              <Button variant="contained" color="secondary" onClick={closeFormPopup}>
-                Cancel
-              </Button>
-            </>
-          )}
+          <Button variant="contained" color="primary" onClick={handleCreateUser}>
+            Create
+          </Button>
+          <Button variant="contained" color="secondary" onClick={closeFormPopup}>
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
       <Dialog open={deleteConfirmationOpen} onClose={closeDeleteConfirmation}>
