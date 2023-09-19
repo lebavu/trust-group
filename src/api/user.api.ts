@@ -12,7 +12,7 @@ export async function createUser(user: User): Promise<void> {
   formData.append("email", user.email);
   formData.append("handphone_number", user.handphone_number);
   formData.append("profile_image", user.profile_image);
-  formData.append("new_password", user.new_password);
+  formData.append("password", user.password);
   formData.append("role_id", user.role_id);
 
   await http.post("users", formData, {

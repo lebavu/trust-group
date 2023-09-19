@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useFormik } from "formik";
-import { Box } from "@mui/material";
+import { Box, Button, TextField, CircularProgress } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import Button from "src/components/Button";
-import Input from "@/components/Input";
 import * as Yup from "yup";
 import { Helmet } from "react-helmet-async";
 import http from "@/utils/http";
@@ -53,24 +51,32 @@ const ForgotPasswordForm = () => {
         <meta name='description' content='Login to have access!' />
       </Helmet>
       <Box
-        className="max-w-[60rem] mx-auto"
+        className="max-w-[50rem] mx-auto"
       >
-        <form onSubmit={formik.handleSubmit} className="rounded bg-slate-50 p-10 shadow-sm">
-          <div className="text-26 font-semibold mb-6 text-blue text-center">Enter email send code</div>
-          <Input
-            name="password"
+        <form onSubmit={formik.handleSubmit}>
+          <div className="text-26 font-medium mb-6 text-blue text-center">Enter email send code</div>
+          {/* Replace Input with TextField */}
+          <TextField
+            name="email"
             id="email"
             type="email"
             className="mt-3"
             value={formik.values.email}
             onChange={formik.handleChange}
-            classNameEye="absolute right-[1.5rem] h-5 w-5 cursor-pointer top-[12px]"
-            errorMessage={formik.touched.email && formik.errors.email ? formik.errors.email : undefined}
             placeholder="Enter email"
             autoComplete="on"
+            size="small"
+            variant="outlined"
+            fullWidth
+            error={formik.touched.email && Boolean(formik.errors.email)}
+            helperText={formik.touched.email && formik.errors.email}
           />
-          <Button className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]" type="submit" isLoading={formik.isSubmitting} disabled={!formik.isValid || formik.isSubmitting}>
-            Send Code
+          <Button className="!mt-8" variant="contained" color="secondary" fullWidth size="large" type="submit" disabled={!formik.isValid || formik.isSubmitting}>
+            {formik.isSubmitting ? ( // Show loading indicator when submitting
+              <CircularProgress size={18} color="inherit" />
+            ) : (
+              "Send Code"
+            )}
           </Button>
           <div className="mt-8 flex items-center justify-center">
             <StyledLink className="text-[1.4rem]" to="/login">

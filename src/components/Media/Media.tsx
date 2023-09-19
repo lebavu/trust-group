@@ -19,6 +19,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FileUploadIcon from "@mui/icons-material/FileUpload";
 import UploadImage from "@/assets/upload.png";
+import Image from "@/components/Image";
 
 interface MediaItem {
   id: string;
@@ -75,7 +76,7 @@ const MediaList: React.FC<MediaListProps> = (props) => {
                   }}
                   className="image-button"
                 >
-                  <img src={media.image_url} alt={`Media ${media.id}`} />
+                  <Image src={media.image_url} alt={`Media ${media.id}`} />
                 </button>
               </li>
             ))}
@@ -85,14 +86,13 @@ const MediaList: React.FC<MediaListProps> = (props) => {
           <aside className="md:w-1/5 media-aside bg-slate-100 p-5 pt-8">
             <h2 className="font-bold mb-3">Media Information</h2>
             <div className="image w-[6rem] h-[6rem] bg-white">
-              <img className="object-cover w-full h-full" src={props.selectedMedia.image_url} alt="thumbnails" />
+              <Image classNames="object-cover w-full h-full" src={props.selectedMedia.image_url} alt="thumbnails" />
             </div>
             <ul className="mt-3 list-none text-[1.2rem]">
               <li>
                 <strong>ID: {props.selectedMedia.id}</strong> </li>
               <li className="break-words">
                 <strong>Image URL: </strong> {props.selectedMedia.image_url}</li>
-              <li><strong>File Size: </strong> bytes</li>
             </ul>
           </aside>
         )}
@@ -200,7 +200,7 @@ const MediaManager: React.FC<MediaManagerProps> = ({ onMediaSelect }) => {
               <TabPanel>
                 <Box sx={{ textAlign: "center", background: "#fff", padding: "7rem 3rem 3rem", border: "1px dashed #999" }}>
                   <Box sx={{ width: "100%", maxWidth: "6rem", marginInline: "auto" }}>
-                    <img src={UploadImage} className="w-full" alt="upload" />
+                    <Image src={UploadImage} classNames="w-full" alt="upload" />
                   </Box>
                   <input type="file" onChange={handleFileChange} ref={inputRef} hidden/>
                   <Stack spacing={2} direction="row" justifyContent="center" sx={{ marginTop: 3 }}>

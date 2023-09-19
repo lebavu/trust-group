@@ -8,16 +8,16 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Button from "src/components/Button";
 import Typography from "@mui/material/Typography";
-import Badge from "@mui/material/Badge";
 import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreIcon from "@mui/icons-material/MoreVert";
+import ManageAccountsRoundedIcon from "@mui/icons-material/ManageAccountsRounded";
+import LogoutTwoToneIcon from "@mui/icons-material/LogoutTwoTone";
 import { useAppStore } from "@/appStore";
 import { AppContext } from "@/context/app.context";
 import { useMutation } from "react-query";
 import authApi from "@/api/auth.api";
+import Image from "@/components/Image";
 
 const AppBar = styled(
   MuiAppBar,
@@ -25,63 +25,9 @@ const AppBar = styled(
 )(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
 }));
-interface MobileMenuProps {
-  anchorEl: HTMLElement | null;
-  mobileMoreAnchorEl: HTMLElement | null;
-  handleMobileMenuClose: () => void;
-  handleProfileMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
-}
-
-const MobileMenu: React.FC<MobileMenuProps> = ({
-  mobileMoreAnchorEl,
-  handleMobileMenuClose,
-  handleProfileMenuOpen,
-}) => {
-  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-  const { isAuthenticated, userInfo } = useContext(AppContext);
-  return (
-    <div>
-      {isAuthenticated && userInfo && (
-        <Menu
-          anchorEl={mobileMoreAnchorEl}
-          anchorOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-          id="primary-search-account-menu-mobile"
-          keepMounted
-          transformOrigin={{
-            vertical: "top",
-            horizontal: "right",
-          }}
-          open={isMobileMenuOpen}
-          onClose={handleMobileMenuClose}
-        >
-          <MenuItem>
-            <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-              <Badge badgeContent={17} color="error">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
-            <p>Notifications</p>
-          </MenuItem>
-          <MenuItem onClick={handleProfileMenuOpen}>
-            <div className="flex items-center gap-[1rem] pl-[12px]">
-              <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
-                <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
-              </div>
-              <span className="text-[1.4rem]">{userInfo.name}</span>
-            </div>
-          </MenuItem>
-        </Menu>
-      )}
-    </div>
-  );
-};
 
 export default function PrimarySearchAppBar() {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState<null | HTMLElement>(null);
   const updateOpen = useAppStore((state) => state.updateOpen);
   const dopen = useAppStore((state) => state.dopen);
   const isMenuOpen = Boolean(anchorEl);
@@ -98,21 +44,15 @@ export default function PrimarySearchAppBar() {
   const handleLogout = () => {
     logoutMutation.mutate();
   };
+  const  handleProfile = () => {
+    navigate(`/users/update-user/${userInfo?.id}`);
+  };
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
-    handleMobileMenuClose();
-  };
-
-  const handleMobileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMobileMoreAnchorEl(event.currentTarget);
   };
 
   const menuId = "primary-search-account-menu";
@@ -127,6 +67,13 @@ export default function PrimarySearchAppBar() {
               vertical: "top",
               horizontal: "right",
             }}
+            sx={{ ".MuiMenu-paper" : {
+              paddingTop: "0",
+              borderRadius: ".8rem",
+            },
+            "ul": {
+              overflow: "hidden"
+            } }}
             id={menuId}
             keepMounted
             transformOrigin={{
@@ -136,10 +83,16 @@ export default function PrimarySearchAppBar() {
             open={isMenuOpen}
             onClose={handleMenuClose}
           >
-            <MenuItem key="my-account">
-              <Link to="/Profile" onClick={handleMenuClose}>
-                Profile
-              </Link>
+            <MenuItem
+              key="my-account"
+              onClick={() => {
+                handleProfile();
+                handleMenuClose();
+              }}
+              sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}
+            >
+              <ManageAccountsRoundedIcon/>
+              Profile
             </MenuItem>
             <MenuItem
               key="logout"
@@ -147,7 +100,9 @@ export default function PrimarySearchAppBar() {
                 handleLogout();
                 handleMenuClose();
               }}
+              sx={{ display: "flex", alignItems: "center", gap: ".5rem" }}
             >
+              <LogoutTwoToneIcon/>
               Logout
             </MenuItem>
           </Menu>
@@ -189,12 +144,7 @@ export default function PrimarySearchAppBar() {
           <Box sx={{ flexGrow: 1 }} />
           {isAuthenticated && userInfo && (
             <div>
-              <Box sx={{ display: { xs: "none", md: "flex" } }}>
-                <IconButton size="large" aria-label="show 17 new notifications" color="inherit">
-                  <Badge badgeContent={17} color="error">
-                    <NotificationsIcon />
-                  </Badge>
-                </IconButton>
+              <Box sx={{ display: "flex" }}>
                 <IconButton
                   size="large"
                   edge="end"
@@ -207,21 +157,9 @@ export default function PrimarySearchAppBar() {
                   <div className="flex items-center gap-[1rem]">
                     <span className="text-[1.4rem] font-medium">Welcome, {userInfo.name}</span>
                     <div className='h-[2.5rem] w-[2.5rem] rounded-full bg-white'>
-                      <img src={userInfo?.profile_image} alt='avatar' className='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
+                      <Image src={userInfo?.profile_image} alt='avatar' classNames='h-[2.5rem] w-[2.5rem] rounded-full object-cover' />
                     </div>
                   </div>
-                </IconButton>
-              </Box>
-              <Box sx={{ display: { xs: "flex", md: "none" } }}>
-                <IconButton
-                  size="large"
-                  aria-label="show more"
-                  aria-controls="primary-search-account-menu-mobile"
-                  aria-haspopup="true"
-                  onClick={handleMobileMenuOpen}
-                  color="inherit"
-                >
-                  <MoreIcon />
                 </IconButton>
               </Box>
             </div>
@@ -238,12 +176,6 @@ export default function PrimarySearchAppBar() {
           )}
         </Toolbar>
       </AppBar>
-      <MobileMenu
-        anchorEl={anchorEl}
-        mobileMoreAnchorEl={mobileMoreAnchorEl}
-        handleMobileMenuClose={handleMobileMenuClose}
-        handleProfileMenuOpen={handleProfileMenuOpen}
-      />
       {renderMenu}
     </Box>
   );

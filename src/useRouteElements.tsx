@@ -26,7 +26,7 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Projects = lazy(() => import("@/pages/Projects"));
 const Roles = lazy(() => import("@/pages/Roles"));
 const Stories = lazy(() => import("@/pages/Stories"));
-// const ChangePassword = lazy(() => import("@/pages/ChangePassword"));
+const Unauthorized = lazy(() => import("@/pages/Unauthorized"));
 
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -125,114 +125,134 @@ export default function useRouteElements() {
             </MainLayout>
           )
         },
-      ]
-    },
-    {
-      path: "",
-      element: <MainLayout />,
-      children: [
         {
           path: path.Stories,
           element: (
-            <Suspense>
-              <Stories />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Stories />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.Branches,
           element: (
-            <Suspense>
-              <Branches />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Branches />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.Blogs,
           element: (
-            <Suspense>
-              <Blogs />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Blogs />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.EValuations,
           element: (
-            <Suspense>
-              <EValuations />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <EValuations />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.UpdateEValuation,
           element: (
-            <Suspense>
-              <UpdateEValuation />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <UpdateEValuation />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.EValuationCategories,
           element: (
-            <Suspense>
-              <EValuationCategories />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <EValuationCategories />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.ProductCategories,
           element: (
-            <Suspense>
-              <ProductCategories />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <ProductCategories />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.InstalmentPlans,
           element: (
-            <Suspense>
-              <InstalmentPlans />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <InstalmentPlans />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.PawnTickets,
           element: (
-            <Suspense>
-              <PawnTickets />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <PawnTickets />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.UpdatePawnTicket,
           element: (
-            <Suspense>
-              <UpdatePawnTicket />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <UpdatePawnTicket />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.Products,
           element: (
-            <Suspense>
-              <Products />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Products />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.Projects,
           element: (
-            <Suspense>
-              <Projects />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Projects />
+              </Suspense>
+            </MainLayout>
           )
         },
         {
           path: path.Roles,
           element: (
-            <Suspense>
-              <Roles />
-            </Suspense>
+            <MainLayout>
+              <Suspense>
+                <Roles />
+              </Suspense>
+            </MainLayout>
           )
         },
       ]
@@ -243,6 +263,16 @@ export default function useRouteElements() {
         <NoneLayout>
           <Suspense>
             <NotFound />
+          </Suspense>
+        </NoneLayout>
+      )
+    },
+    {
+      path: path.Unauthorized,
+      element: (
+        <NoneLayout>
+          <Suspense>
+            <Unauthorized />
           </Suspense>
         </NoneLayout>
       )

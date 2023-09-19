@@ -1,6 +1,6 @@
 import { ReactNode, useState, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
@@ -21,14 +21,24 @@ import {
   Typography,
   Pagination,
   Skeleton,
-  Stack,
   InputAdornment,
   Select,
   MenuItem,
   FormControl,
   FormHelperText,
-  InputLabel
+  InputLabel,
+  Checkbox,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ModeEditSharpIcon from "@mui/icons-material/ModeEditSharp";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { User } from "@/api/types";
@@ -37,22 +47,32 @@ import MediaManager from "@/components/Media";
 import http from "@/utils/http";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
+import Popover from "@/components/Popover";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Image from "@/components/Image";
+
+type SelectedUsers = { [userId: string]: boolean };
 
 const userSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
   email: yup.string().required("Email is required"),
   profile_image: yup.string().required("Profile image is required"),
-  handphone_number: yup.string().required("Handphone Number is required"),
+  handphone_number: yup.number().required("Handphone Number is required"),
   role_id: yup.string().required("Role is required"),
+  password: yup
+    .string()
+    .required("Password is required")
+    .min(6, "Length from 6 - 160 characters")
+    .max(160, "Length from 6 - 160 characters"),
   verified_code_forgot: yup.string(),
 });
 
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
-    return <img src={imageUrl} alt="User" style={{ width: "5rem" }} />;
+    return <Image src={imageUrl} alt="User" style={{ width: "5rem" }} />;
   } else if (imageUrl instanceof File) {
     const temporaryUrl = URL.createObjectURL(imageUrl);
-    return <img src={temporaryUrl} alt="User" style={{ width: "5rem" }} />;
+    return <Image src={temporaryUrl} alt="User" style={{ width: "5rem" }} />;
   } else {
     return null;
   }
@@ -107,6 +127,7 @@ const UserComponent: React.FC = () => {
     handphone_number: "",
     role_id: "",
     new_password: "",
+    password: "",
     verified_code_forgot: ""
   });
 
@@ -119,6 +140,34 @@ const UserComponent: React.FC = () => {
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [selectedRoleId, setSelectedRoleId] = useState<string>("");
   const [selectedRoleIdFilter, setSelectedRoleIdFilter] = useState<string>("");
+  const [selectedUsers, setSelectedUsers] = useState<SelectedUsers>({});
+  const [popoverInfo, setPopoverInfo] = useState<{ [key: string]: { open: boolean; anchorEl: HTMLElement | null } }>({});
+
+  const handleOpenPopover = (branchId: string, event: React.MouseEvent<HTMLElement>) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { open: true, anchorEl: event.currentTarget },
+    }));
+  };
+
+  const handleClosePopover = (branchId: string) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { ...prevInfo[branchId], open: false },
+    }));
+  };
+
+  const handleSelectAll = () => {
+    const areAllSelected = Object.values(selectedUsers).every((selected) => selected);
+
+    const updatedSelectedUsers = { ...selectedUsers };
+
+    users.forEach((users) => {
+      updatedSelectedUsers[users.id] = !areAllSelected;
+    });
+
+    setSelectedUsers(updatedSelectedUsers);
+  };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
@@ -170,6 +219,7 @@ const UserComponent: React.FC = () => {
       profile_image: "",
       handphone_number: "",
       role_id: "",
+      password: "",
       new_password: "",
       verified_code_forgot: ""
     });
@@ -178,7 +228,7 @@ const UserComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (user: User) => {
-    navigate(`/update-user/${user.id}`);
+    navigate(`/users/update-user/${user.id}`);
   };
 
   const closeFormPopup = () => {
@@ -212,6 +262,7 @@ const UserComponent: React.FC = () => {
         profile_image: "",
         handphone_number: "",
         role_id: "",
+        password: "",
         new_password: "",
         verified_code_forgot: ""
       });
@@ -241,6 +292,28 @@ const UserComponent: React.FC = () => {
     setUserToDelete(null);
   };
 
+  const handleCheckboxChange = (userId: string) => {
+    setSelectedUsers((prevSelectedUsers) => ({
+      ...prevSelectedUsers,
+      [userId]: !prevSelectedUsers[userId],
+    }));
+  };
+
+  const handleDeleteSelectedUsers = () => {
+    const usersToDelete = Object.keys(selectedUsers).filter((userId) => selectedUsers[userId]);
+    if (usersToDelete.length > 0) {
+      usersToDelete.forEach((userId) => {
+        deleteUserMutation.mutate(userId);
+      });
+      // Clear selected Users
+      setSelectedUsers({});
+    }
+  };
+  const countSelectedUsers = () => {
+    return Object.values(selectedUsers).filter((selected) => selected).length;
+  };
+  const selectedUsersCount = countSelectedUsers();
+
   const uniqueRoleIds = Array.from(new Set(users.map(user => user.role_id)));
 
   return (
@@ -252,13 +325,15 @@ const UserComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         Users List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
+          sx={{ maxWidth: "22rem", width: "100%" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -267,11 +342,11 @@ const UserComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create User
         </Button>
       </div>
-      <Box sx={{ maxWidth: "20rem" }} mb={"2rem"}>
+      <Box sx={{ maxWidth: "22rem" }} mb={"2rem"}>
         <FormControl fullWidth >
           <InputLabel size="small" id="select-filter-label">All Role</InputLabel>
           <Select
@@ -280,6 +355,7 @@ const UserComponent: React.FC = () => {
             size="small"
             label="All Role"
             value={selectedRoleIdFilter}
+            IconComponent={ExpandMoreIcon}
             onChange={(event) => setSelectedRoleIdFilter(event.target.value)}
           >
             <MenuItem value="">All Roles</MenuItem>
@@ -296,32 +372,51 @@ const UserComponent: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>
-                {users.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? (
+                  <Checkbox
+                    indeterminate={
+                      Object.values(selectedUsers).some((selected) => selected) &&
+                      Object.values(selectedUsers).some((selected) => !selected)
+                    }
+                    checked={Object.values(selectedUsers).every((selected) => selected)}
+                    onChange={handleSelectAll}
+                  />
+                ) : (
+                  <Skeleton  height={60} animation="wave" />
+                )
+                }
               </TableCell>
               <TableCell>
-                {users.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {users.length > 0 ? "Email" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? "Email" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {users.length > 0 ? "Handphone Number" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? "Handphone Number" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {users.length > 0 ? "Profile Image" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? "Profile Image" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {users.length > 0 ? "Role id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {users.length > 0 ? "Role id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
-              <TableCell align="right">{users.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}</TableCell>
+              <TableCell align="right">{users.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {filteredUsers.length > 0 ? (
               filteredUsers.map((user) => (
                 <TableRow key={user.id}>
-                  <TableCell>{user.id}</TableCell>
-                  <TableCell>{user.name}</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedUsers[user.id] || false}
+                      onChange={() => handleCheckboxChange(user.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <strong>{user.name}</strong>
+                  </TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.handphone_number}</TableCell>
                   <TableCell className="max-w-[30rem] break-words">{renderImageUrl(user.profile_image)}</TableCell>
@@ -330,15 +425,30 @@ const UserComponent: React.FC = () => {
                       <RoleName roleId={user.role_id} />
                     )}
                   </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} justifyContent={"end"}>
-                      <Button variant="contained" color="primary" onClick={() => openEditFormPopup(user)}>
-                        Edit
-                      </Button>
-                      <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(user)}>
-                        Delete
-                      </Button>
-                    </Stack>
+                  <TableCell className="!text-right">
+                    <IconButton color="primary" onClick={(e) => handleOpenPopover(user.id, e)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Popover
+                      open={popoverInfo[user.id]?.open || false}
+                      anchorEl={popoverInfo[user.id]?.anchorEl}
+                      onClose={() => handleClosePopover(user.id)}
+                    >
+                      <List>
+                        <ListItemButton onClick={() => openEditFormPopup(user)}>
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <ModeEditSharpIcon color="primary"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Edit" />
+                        </ListItemButton>
+                        <ListItemButton onClick={() => openDeleteConfirmation(user)} >
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <DeleteRoundedIcon color="secondary"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Delete" className="text-secondary"/>
+                        </ListItemButton>
+                      </List>
+                    </Popover>
                   </TableCell>
                 </TableRow>
               ))
@@ -346,7 +456,7 @@ const UserComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={7}>
                   {users.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No users found.</p>
                   )}
@@ -356,6 +466,13 @@ const UserComponent: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {Object.values(selectedUsers).some((selected) => selected) && (
+        <div className="mt-6">
+          <Button variant="outlined" startIcon={<DeleteRoundedIcon />} color="primary" onClick={handleDeleteSelectedUsers} disabled={selectedUsersCount === 0}>
+            Delete Selected ({selectedUsersCount})
+          </Button>
+        </div>
+      )}
       <Box mt={2} display="flex" justifyContent="center">
         <Pagination
           count={totalPages}
@@ -368,7 +485,7 @@ const UserComponent: React.FC = () => {
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
         <DialogTitle className="!pt-10"> Create New User </DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12  !pt-6">
           <TextField
             name="name"
             label="Name"
@@ -379,7 +496,7 @@ const UserComponent: React.FC = () => {
             fullWidth
             error={!!newUser.errors?.name}
             helperText={newUser.errors?.name}
-            sx={{ marginBottom: "2rem" }}
+
           />
           <TextField
             name="email"
@@ -391,7 +508,7 @@ const UserComponent: React.FC = () => {
             fullWidth
             error={!!newUser.errors?.email}
             helperText={newUser.errors?.email}
-            sx={{ marginBottom: "2rem" }}
+
           />
           <TextField
             name="handphone_number"
@@ -403,7 +520,20 @@ const UserComponent: React.FC = () => {
             fullWidth
             error={!!newUser.errors?.handphone_number}
             helperText={newUser.errors?.handphone_number}
-            sx={{ marginBottom: "2rem" }}
+
+          />
+          <TextField
+            name="password"
+            label="Password"
+            size="small"
+            type="password"
+            value={newUser.password}
+            onChange={handleInputChange}
+            variant="outlined"
+            fullWidth
+            error={!!newUser.errors?.password}
+            helperText={newUser.errors?.password}
+
           />
           <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
             <InputLabel size="small" id="select-role">Role</InputLabel>
@@ -414,9 +544,10 @@ const UserComponent: React.FC = () => {
               name="role_id"
               value={selectedRoleId || newUser.role_id}
               onChange={handleInputChange}
+              IconComponent={ExpandMoreIcon}
               variant="outlined"
               error={!!newUser.errors?.role_id}
-              sx={{ marginBottom: "2rem" }}
+
             >
               {roles.map((role:any) => (
                 <MenuItem key={role.id} value={role.id}>
@@ -433,7 +564,7 @@ const UserComponent: React.FC = () => {
               <div>
                 <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
                 <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                  <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                  <Image src={selectedImageUrl} classNames="w-full h-full object-cover" alt="Selected Media" />
                 </div>
               </div>
             )}
@@ -462,7 +593,6 @@ const UserComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };

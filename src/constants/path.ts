@@ -6,7 +6,7 @@ const path = {
   EValuations: "/evaluations",
   InstalmentPlans: "/instalment-plans",
   PawnTickets: "/pawn-tickets",
-  UpdatePawnTicket: "/update-pawn-ticket/:id",
+  UpdatePawnTicket: "/pawn-tickets/update-pawn-ticket/:id",
   ProductCategories: "/product-categories",
   Products: "/products",
   Projects: "/projects",
@@ -15,12 +15,13 @@ const path = {
   Users: "/users",
   Login: "/login",
   SignUp: "/sign-up",
-  Profile: "/profile",
+  Profile: "/users/profile",
   ForgotPassword: "/forgot-password",
   ResetPassword: "/reset-password",
   NotFound: "/not-found",
-  UpdateUser: "/update-user/:id",
-  UpdateEValuation: "/update-e-valuation/:id"
+  Unauthorized: "/Unauthorized",
+  UpdateUser: "/users/update-user/:id",
+  UpdateEValuation: "/evaluations/update-e-valuation/:id"
 } as const;
 
 export default path;

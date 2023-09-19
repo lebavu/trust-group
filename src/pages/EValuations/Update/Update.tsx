@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { styled } from "@mui/material/styles";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
@@ -16,7 +16,8 @@ import {
   InputLabel,
   Stack
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { type SelectChangeEvent } from "@mui/material";
 import { EValuation } from "@/api/types";
 import { Helmet } from "react-helmet-async";
@@ -24,6 +25,9 @@ import DateTime from "@/components/DateTime";
 import MediaManager from "@/components/Media";
 import http from "@/utils/http";
 import { eValuationSchema } from "@/utils/rules";
+import RichTextEditor from "@/components/Editor";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Image from "@/components/Image";
 
 const StyledLink = styled(Link)`
   font-family: "Roboto";
@@ -130,6 +134,40 @@ const UpdateEValuation: React.FC = () => {
           return null;
         });
       }
+    } else if (name === "appointment_date") {
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+          setEditedEValuation((prevEditEValuation) => {
+            if (prevEditEValuation) {
+              return {
+                ...prevEditEValuation,
+                appointment_date: formattedDate,
+              };
+            }
+            return null;
+          });
+        }
+      }else{
+        setEditedEValuation((prevEditEValuation) => {
+          if (prevEditEValuation) {
+            return {
+              ...prevEditEValuation,
+              appointment_date: value,
+            };
+          }
+          return null;
+        });
+      }
     }  else if (name === "status") {
       const intValue = parseInt(value, 10);
       setEditedEValuation((prevEditEValuation) => {
@@ -226,16 +264,17 @@ const UpdateEValuation: React.FC = () => {
         <title>Update Evaluation | Trust Group</title>
         <meta name="description" content="Evaluations to have access!" />
       </Helmet>
-      <div className="flex items-center mb-[3rem] gap-6">
-        <StyledLink className="!text-black" to="/evaluations">
-          <ArrowBackIcon className="!text-[2.6rem]" />
+      <div className=" mb-[3rem]">
+        <StyledLink className="gap-2 flex items-center !text-black back-btn" to="/evaluations">
+          <ArrowBackIosNewIcon className="!text-[1.2rem]" />
+          <Typography variant="h6">
+            Back
+          </Typography>
         </StyledLink>
-        <Typography variant="h3">
-          Evaluations List
-        </Typography>
       </div>
+      <Breadcrumbs/>
       {editedEValuation && (
-        <div className="flex w-full flex-col gap-y-[2.5rem] !pt-6">
+        <div className="flex w-full flex-col gap-y-12 !pt-6">
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
             <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
               <InputLabel size="small" id="select-user">User</InputLabel>
@@ -245,6 +284,7 @@ const UpdateEValuation: React.FC = () => {
                 size="small"
                 name="user_id"
                 value={editedEValuation.user_id}
+                IconComponent={ExpandMoreIcon}
                 onChange={handleInputChange}
                 variant="outlined"
                 error={!!editedEValuation.errors?.user_id}
@@ -265,6 +305,7 @@ const UpdateEValuation: React.FC = () => {
                 size="small"
                 name="category_id"
                 value={editedEValuation.category_id}
+                IconComponent={ExpandMoreIcon}
                 onChange={handleInputChange}
                 variant="outlined"
                 error={!!editedEValuation.errors?.category_id}
@@ -286,6 +327,7 @@ const UpdateEValuation: React.FC = () => {
                 label="Status"
                 value={editedEValuation.status.toString()}
                 onChange={handleInputChange}
+                IconComponent={ExpandMoreIcon}
                 variant="outlined"
                 fullWidth
                 size="small"
@@ -324,7 +366,7 @@ const UpdateEValuation: React.FC = () => {
               error={!!editedEValuation.errors?.price}
               helperText={editedEValuation.errors?.price}
             />
-            <div>
+            <div className="relative">
               <DateTime
                 label="Appointment Date"
                 value={editedEValuation.appointment_date}
@@ -339,7 +381,7 @@ const UpdateEValuation: React.FC = () => {
                 }}
               />
               {editedEValuation.errors?.appointment_date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
           </div>
@@ -401,22 +443,51 @@ const UpdateEValuation: React.FC = () => {
               size="small"
               fullWidth
               error={!!editedEValuation.errors?.other_remarks}
-              helperText={editedEValuation.errors?.other_remarks}
+              helperText={errors?.other_remarks}
             />
-            <TextField
-              name="content"
-              label="Content"
-              value={editedEValuation.content}
-              onChange={handleInputChange}
-              variant="outlined"
-              size="small"
-              fullWidth
-              error={!!editedEValuation.errors?.content}
-              helperText={editedEValuation.errors?.content}
+            <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
+              <InputLabel size="small" id="select-branch">Branch</InputLabel>
+              <Select
+                labelId="select-branch"
+                id="branch-select"
+                size="small"
+                name="branch_id"
+                value={editedEValuation.branch_id}
+                IconComponent={ExpandMoreIcon}
+                onChange={handleInputChange}
+                variant="outlined"
+                error={!!editedEValuation.errors?.branch_id}
+              >
+                {branches.map((branch:any) => (
+                  <MenuItem key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {editedEValuation.errors?.branch_id && <FormHelperText error>{editedEValuation.errors.branch_id}</FormHelperText>}
+            </FormControl>
+          </div>
+          <div>
+            <span className="!mb-3 block !font-medium !text-[1.3rem]"> Content:
+            </span>
+            <RichTextEditor
+              value={editedEValuation.content || ""} // Pass the current content value
+              onChange={(content: string) => {
+                console.log(content);
+                setEditedEValuation((prevEditedEValuation) => {
+                  if (prevEditedEValuation) {
+                    return {
+                      ...prevEditedEValuation,
+                      content: content,
+                    };
+                  }
+                  return null;
+                });
+              }}
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
-            <div>
+            <div className="relative">
               <DateTime
                 label="Date"
                 value={editedEValuation.date}
@@ -431,29 +502,9 @@ const UpdateEValuation: React.FC = () => {
                 }}
               />
               {editedEValuation.errors?.date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
-            <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
-              <InputLabel size="small" id="select-branch">Branch</InputLabel>
-              <Select
-                labelId="select-branch"
-                id="branch-select"
-                size="small"
-                name="branch_id"
-                value={editedEValuation.branch_id}
-                onChange={handleInputChange}
-                variant="outlined"
-                error={!!editedEValuation.errors?.branch_id}
-              >
-                {branches.map((branch:any) => (
-                  <MenuItem key={branch.id} value={branch.id}>
-                    {branch.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {editedEValuation.errors?.branch_id && <FormHelperText error>{editedEValuation.errors.branch_id}</FormHelperText>}
-            </FormControl>
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
             <div className="flex flex-col gap-3">
@@ -466,20 +517,19 @@ const UpdateEValuation: React.FC = () => {
                 <div>
                   <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
                   <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                    <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                    <Image src={selectedImageUrl} classNames="w-full h-full object-cover" alt="Selected Media" />
                   </div>
                 </div>
               )}
             </div>
           </div>
           <Stack spacing={2} direction="row">
-            <Button variant="contained" color="primary" onClick={handleUpdateEValuation}>
+            <Button variant="contained" className="w-full" color="primary" onClick={handleUpdateEValuation}>
               Update
             </Button>
           </Stack>
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 };

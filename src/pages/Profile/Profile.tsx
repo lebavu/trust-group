@@ -2,6 +2,8 @@ import React, { useState , useContext } from "react";
 import { Box, Container, Typography, Tabs, Tab, List, ListItem, ListItemText } from "@mui/material";
 import { AppContext } from "@/context/app.context";
 import { Helmet } from "react-helmet-async";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Image from "@/components/Image";
 
 
 const Profile = () => {
@@ -17,6 +19,7 @@ const Profile = () => {
         <title>Profile | Trust Group</title>
         <meta name='description' content='Profile to have access!' />
       </Helmet>
+      <Breadcrumbs/>
       <Container maxWidth='lg'>
         <Typography variant='h4' gutterBottom>
           My Account
@@ -28,7 +31,7 @@ const Profile = () => {
         {tabIndex === 0 && (
           <Box sx={{ mt: 5 }}>
             <div className="w-[5rem] h-[5rem] rounded-[50%] mb-[3rem] overflow-hidden">
-              <img src={userInfo?.profile_image} alt="user" className="w-full h-full object-cover" />
+              <Image src={userInfo?.profile_image} alt="user" classNames="w-full h-full object-cover" />
             </div>
             <Typography className="!mb-[1.5rem] !last:mb-0">
               <strong>Id:</strong> { userInfo?.id}

@@ -1,20 +1,28 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useMutation } from "react-query";
-// Không có tính năng tree-shaking
-// import { omit } from "lodash"
-
-// Import chỉ mỗi function omit
 import omit from "lodash/omit";
-
 import { schema, Schema } from "src/utils/rules";
-import Input from "src/components/Input";
 import authApi from "src/api/auth.api";
 import { isAxiosUnprocessableEntityError } from "src/utils/utils";
 import { ErrorResponse } from "src/types/utils.type";
-import Button from "src/components/Button";
 import { Helmet } from "react-helmet-async";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import styled from "styled-components";
+
+const StyledLink = styled(Link)`
+  font-family: "Roboto";
+  color: #1e2f8d;
+  &:hover,&.active {
+    text-decoration: underline;
+  }
+`;
 
 type FormData = Pick<Schema, "email" | "verified_code_forgot" | "password" | "confirm_password">;
 const registerSchema = schema.pick(["email", "verified_code_forgot", "password", "confirm_password"]);
@@ -29,6 +37,8 @@ export default function Register() {
   } = useForm<FormData>({
     resolver: yupResolver(registerSchema)
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const resetPasswordMutation = useMutation({
     mutationFn: (body: Omit<FormData, "confirm_password">) => authApi.resetPassword(body)
   });
@@ -61,54 +71,82 @@ export default function Register() {
         <meta name="description" content="Reset Password Trust Group" />
       </Helmet>
       <div className="max-w-[60rem] mx-auto">
-        <form className="rounded bg-slate-50 p-10 shadow-sm" onSubmit={onSubmit} noValidate>
-          <div className="text-26 font-semibold mb-6 text-blue text-center">Reset Password</div>
-          <Input
-            name="email"
-            register={register}
+        <form onSubmit={onSubmit} noValidate>
+          <div className="text-26 font-medium mb-6 text-blue text-center">Reset Password</div>
+          <TextField
+            {...register("email")}
             type="email"
-            className="mt-8"
-            errorMessage={errors.email?.message}
-            placeholder="Email"
+            variant="outlined"
+            fullWidth
+            size="small"
+            margin="normal"
+            label="Email"
+            error={!!errors.email}
+            helperText={errors.email?.message}
           />
-          <Input
-            name="verified_code_forgot"
-            register={register}
+          <TextField
+            {...register("verified_code_forgot")}
             type="text"
-            className="mt-8"
-            errorMessage={errors.verified_code_forgot?.message}
-            placeholder="verified_code_forgot"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            size="small"
+            label="Verification Code"
+            error={!!errors.verified_code_forgot}
+            helperText={errors.verified_code_forgot?.message}
           />
-          <Input
-            name="password"
-            register={register}
-            type="password"
-            className="mt-2"
-            classNameEye="absolute right-[5px] h-5 w-5 cursor-pointer top-[12px]"
-            errorMessage={errors.password?.message}
-            placeholder="Password"
-            autoComplete="on"
+          <TextField
+            {...register("password")}
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            size="small"
+            label="Password"
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            InputProps={{
+              endAdornment: (
+                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                  {showPassword ? <VisibilityOffIcon className="!text-[1.6rem]"/> : <VisibilityIcon className="!text-[1.6rem]"/>}
+                </IconButton>
+              ),
+            }}
           />
-
-          <Input
-            name="confirm_password"
-            register={register}
-            type="password"
-            className="mt-2"
-            classNameEye="absolute right-[5px] h-5 w-5 cursor-pointer top-[12px]"
-            errorMessage={errors.confirm_password?.message}
-            placeholder="Confirm Password"
-            autoComplete="on"
+          <TextField
+            {...register("confirm_password")}
+            type={showPassword ? "text" : "password"}
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            size="small"
+            label="Confirm Password"
+            error={!!errors.confirm_password}
+            helperText={errors.confirm_password?.message}
+            InputProps={{
+              endAdornment: (
+                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                  {showConfirmPassword ? <VisibilityOffIcon className="!text-[1.6rem]"/> : <VisibilityIcon className="!text-[1.6rem]"/>}
+                </IconButton>
+              ),
+            }}
           />
-
-          <div className="mt-2">
+          <div className="mt-8">
             <Button
-              className="flex bg-secondary h-[4rem] h-[4rem] nowrap text-[1.4rem] w-full items-center justify-center py-0 px-6 rounded-[.5rem] text-white hover:bg-secondary/[.8]"
-              isLoading={resetPasswordMutation.isLoading}
+              type="submit"
+              variant="contained"
+              color="secondary"
+              fullWidth
+              size="large"
               disabled={resetPasswordMutation.isLoading}
             >
-              Reset Password
+              {resetPasswordMutation.isLoading ? "Loading..." : "Reset Password"}
             </Button>
+          </div>
+          <div className="mt-8 flex items-center justify-center">
+            <StyledLink className="text-[1.4rem]" to="/login">
+              Back to Login?
+            </StyledLink>
           </div>
         </form>
       </div>

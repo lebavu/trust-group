@@ -1,7 +1,7 @@
 import React, { useState, useEffect, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { Helmet } from "react-helmet-async";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
@@ -25,6 +25,8 @@ import {
   MenuItem,
   Stack
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 interface Parent {
   id: string;
@@ -325,7 +327,8 @@ const BranchComponent: React.FC = () => {
         <title>Products Categories | Trust Group</title>
         <meta name='description' content='Products Categories to have access!' />
       </Helmet>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
@@ -334,7 +337,7 @@ const BranchComponent: React.FC = () => {
           variant="outlined"
 
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create Branch
         </Button>
       </div>
@@ -343,16 +346,16 @@ const BranchComponent: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>
-                {branches.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {branches.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {branches.length > 0 ? "Description" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {branches.length > 0 ? "Description" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {branches.length > 0 ? "Parent" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {branches.length > 0 ? "Parent" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {branches.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {branches.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -379,7 +382,7 @@ const BranchComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={4}>
                   {branches.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No branches found.</p>
                   )}
@@ -484,7 +487,6 @@ const BranchComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };

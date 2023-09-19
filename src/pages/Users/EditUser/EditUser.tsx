@@ -20,13 +20,16 @@ import {
   FormHelperText,
   InputLabel
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import "./EditUser.sass";
 import { User } from "@/api/types";
 import http from "@/utils/http";
 import MediaManager from "@/components/Media";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Image from "@/components/Image";
 
 const StyledLink = styled(Link)`
   font-family: "Roboto";
@@ -115,7 +118,6 @@ const EditUser: React.FC = () => {
       })
       .catch((error) => {
         console.error(error);
-        // console.log(errors);
       });
   }, [id]);
   useEffect(() => {
@@ -176,14 +178,15 @@ const EditUser: React.FC = () => {
         <title>Update user | Trust Group</title>
         <meta name='description' content='Users to have access!' />
       </Helmet>
-      <div className="flex items-center mb-[3rem] gap-6">
-        <StyledLink className="!text-black" to="/pawn-tickets">
-          <ArrowBackIcon className="!text-[2.6rem]" />
+      <div className=" mb-[3rem]">
+        <StyledLink className="gap-2 flex items-center !text-black back-btn" to="/users">
+          <ArrowBackIosNewIcon className="!text-[1.2rem]" />
+          <Typography variant="h6">
+            Back
+          </Typography>
         </StyledLink>
-        <Typography variant="h3">
-          Users List
-        </Typography>
       </div>
+      <Breadcrumbs/>
       <div className="update-user-wrapper">
         <Box>
           <Typography variant="h4" mb={"3rem"}>
@@ -196,13 +199,13 @@ const EditUser: React.FC = () => {
                 {selectedImageUrl && (
                   <div className="mx-auto">
                     <div className="image w-[12rem] h-[12rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                      <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                      <Image src={selectedImageUrl} classNames="w-full h-full object-cover" alt="Selected Media" />
                     </div>
                   </div>
                 )}
                 <MediaManager onMediaSelect={handleSelectedMedia} />
               </div>
-              <div className="md:w-full md:flex-1">
+              <div className="md:w-full md:flex-1 flex flex-col gap-y-12">
                 <TextField
                   name="name"
                   label="Name"
@@ -213,7 +216,7 @@ const EditUser: React.FC = () => {
                   fullWidth
                   error={!!editedUser.errors?.name}
                   helperText={editedUser.errors?.name}
-                  sx={{ marginBottom: "2rem" }}
+
                 />
                 <TextField
                   name="email"
@@ -225,7 +228,7 @@ const EditUser: React.FC = () => {
                   fullWidth
                   error={!!editedUser.errors?.email}
                   helperText={editedUser.errors?.email}
-                  sx={{ marginBottom: "2rem" }}
+
                 />
                 <TextField
                   name="handphone_number"
@@ -237,7 +240,7 @@ const EditUser: React.FC = () => {
                   fullWidth
                   error={!!editedUser.errors?.handphone_number}
                   helperText={editedUser.errors?.handphone_number}
-                  sx={{ marginBottom: "2rem" }}
+
                 />
                 <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
                   <InputLabel size="small" id="select-role">Role</InputLabel>
@@ -248,9 +251,10 @@ const EditUser: React.FC = () => {
                     name="role_id"
                     value={selectedRoleId || editedUser.role_id}
                     onChange={handleInputChange}
+                    IconComponent={ExpandMoreIcon}
                     variant="outlined"
                     error={!!editedUser.errors?.role_id}
-                    sx={{ marginBottom: "2rem" }}
+
                   >
                     {roles.map((role:any) => (
                       <MenuItem key={role.id} value={role.id}>
@@ -280,8 +284,8 @@ const EditUser: React.FC = () => {
                           onChange={handleInputChange}
                           variant="outlined"
                           fullWidth
-                          error={!!editedUser.errors?.new_password}
-                          helperText={editedUser.errors?.new_password}
+                          error={!!errors?.new_password}
+                          helperText={errors?.new_password}
                         />
                         <button onClick={togglePasswordVisibility} className="toggle-pass">
                           {showPassword ? <VisibilityOffIcon/> : <RemoveRedEyeIcon/> }

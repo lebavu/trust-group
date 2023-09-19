@@ -27,8 +27,6 @@ export const getProfileFromLS = () => {
   return null;
 };
 
-
-
 export const setProfileToLS = (user: User) => {
   localStorage.setItem("userInfo", JSON.stringify(user));
 };

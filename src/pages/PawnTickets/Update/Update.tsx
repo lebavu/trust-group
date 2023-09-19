@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { styled } from "@mui/material/styles";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
@@ -16,13 +16,15 @@ import {
   InputLabel,
   Stack
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { type SelectChangeEvent } from "@mui/material";
 import { PawnTickets } from "@/api/types";
 import { Helmet } from "react-helmet-async";
 import DateTime from "@/components/DateTime";
 import http from "@/utils/http";
 import { pawnTicketSchema } from "@/utils/rules";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 const StyledLink = styled(Link)`
   font-family: "Roboto";
@@ -51,7 +53,6 @@ const UpdatePawnTicket: React.FC = () => {
   const [editedTicket, setEditedTicket] = useState<PawnTickets | null>(null);
   // eslint-disable-next-line
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
   const { data: users = [] } = useQuery("users", fetchUsers);
   useEffect(() => {
     getPawnTicketById(id)
@@ -198,16 +199,17 @@ const UpdatePawnTicket: React.FC = () => {
         <title>Update Pawn Ticket | Trust Group</title>
         <meta name="description" content="Pawn Tickets to have access!" />
       </Helmet>
-      <div className="flex items-center mb-[3rem] gap-6">
-        <StyledLink className="!text-black" to="/pawn-tickets">
-          <ArrowBackIcon className="!text-[2.6rem]" />
+      <div className=" mb-[3rem]">
+        <StyledLink className="gap-2 flex items-center !text-black back-btn" to="/pawn-tickets">
+          <ArrowBackIosNewIcon className="!text-[1.2rem]" />
+          <Typography variant="h6">
+            Back
+          </Typography>
         </StyledLink>
-        <Typography variant="h3">
-          Pawn Tickets List
-        </Typography>
       </div>
+      <Breadcrumbs/>
       {editedTicket && (
-        <div className="flex w-full flex-col gap-y-[2.5rem] !pt-6">
+        <div className="flex w-full flex-col gap-y-12 !pt-6">
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
             <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
               <InputLabel size="small" id="select-user">User</InputLabel>
@@ -218,6 +220,7 @@ const UpdatePawnTicket: React.FC = () => {
                 name="user_id"
                 value={editedTicket.user_id}
                 onChange={handleInputChange}
+                IconComponent={ExpandMoreIcon}
                 variant="outlined"
                 error={!!editedTicket.errors?.user_id}
               >
@@ -251,6 +254,7 @@ const UpdatePawnTicket: React.FC = () => {
                 name="pawn_type"
                 value={editedTicket.pawn_type.toString()}
                 onChange={handleInputChange}
+                IconComponent={ExpandMoreIcon}
                 variant="outlined"
                 error={!!editedTicket.errors?.pawn_type}
               >
@@ -355,7 +359,7 @@ const UpdatePawnTicket: React.FC = () => {
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
-            <div>
+            <div className="relative">
               <DateTime
                 label="Pawn Date"
                 value={editedTicket.pawn_date}
@@ -370,7 +374,7 @@ const UpdatePawnTicket: React.FC = () => {
                 }}
               />
               {editedTicket.errors?.pawn_date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
             <TextField
@@ -382,7 +386,7 @@ const UpdatePawnTicket: React.FC = () => {
               size="small"
               fullWidth
               error={!!editedTicket.errors?.duration}
-              helperText={editedTicket.errors?.duration}
+              helperText={errors?.duration}
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
@@ -414,13 +418,12 @@ const UpdatePawnTicket: React.FC = () => {
             />
           </div>
           <Stack spacing={2} direction="row">
-            <Button variant="contained" color="primary" onClick={handleUpdatePawnTicket}>
+            <Button variant="contained" className="w-full" color="primary" onClick={handleUpdatePawnTicket}>
               Update
             </Button>
           </Stack>
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 };

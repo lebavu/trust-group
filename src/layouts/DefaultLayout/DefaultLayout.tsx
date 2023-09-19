@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Outlet,Link, useLocation } from "react-router-dom";
 import { styled, useTheme } from "@mui/material/styles";
 import { type Theme } from "@mui/material";
@@ -14,8 +14,8 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import LinkIcon from "@mui/icons-material/Link";
 import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import SupervisorAccountIcon from "@mui/icons-material/SupervisorAccount";
-import WebStoriesIcon from "@mui/icons-material/WebStories";
-import ArticleIcon from "@mui/icons-material/Article";
+// import WebStoriesIcon from "@mui/icons-material/WebStories";
+// import ArticleIcon from "@mui/icons-material/Article";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
 import CategoryIcon from "@mui/icons-material/Category";
 import ListItem from "@mui/material/ListItem";
@@ -29,11 +29,12 @@ import { useAppStore } from "@/appStore";
 const drawerWidth = 240;
 
 interface Props {
-  children?: React.ReactNode
+  children?: React.ReactNode;
 }
 
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
+  zIndex: 999,
   transition: theme.transitions.create("width", {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
@@ -58,7 +59,6 @@ const DrawerHeader = styled("div")(({ theme }) => ({
   alignItems: "flex-start",
   justifyContent: "flex-end",
   padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
   ...theme.mixins.toolbar,
 }));
 
@@ -69,6 +69,24 @@ const Drawer = styled(MuiDrawer, {
   flexShrink: 0,
   whiteSpace: "nowrap",
   boxSizing: "border-box",
+  ".MuiDrawer-paper":{
+    borderRight: "1px solid rgb(242, 244, 247)",
+    scrollbarWidth: "thin",
+    scrollbarColor: "#ccc #f0f0f0",
+    "&::-webkit-scrollbar": {
+      width: "4px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "#ccc",
+      borderRadius: "1rem",
+    },
+    "&::-webkit-scrollbar-thumb:hover": {
+      background: "#888",
+    },
+    "&::-webkit-scrollbar-track": {
+      background: "#f0f0f0",
+    },
+  },
   [theme.breakpoints.down("md")]: {
     position: "fixed",
     top: 0,
@@ -89,8 +107,20 @@ const Drawer = styled(MuiDrawer, {
 function DefaultLayoutInner({ children }: Props) {
   const theme = useTheme();
   // const navigate = useNavigate();
+  const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 900);
   const open = useAppStore((state) => state.dopen);
+  const updateOpen = useAppStore((state) => state.updateOpen);
   const location = useLocation();
+  window.addEventListener("resize", () => {
+    setIsSmallScreen(window.innerWidth < 900);
+  });
+
+  const handleLinkClick = () => {
+
+    if (isSmallScreen) {
+      updateOpen(false);
+    }
+  };
   return (
     <>
       <Navbar></Navbar>
@@ -113,7 +143,7 @@ function DefaultLayoutInner({ children }: Props) {
           <Divider />
           <List>
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/branches" ? "link-active" : ""}`} to="/branches">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/branches" ? "link-active" : ""}`} to="/branches" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -124,12 +154,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <LinkIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Branches' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Branches' />
                 </ListItemButton>
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/e-valuation-categories" ? "link-active" : ""}`} to="/e-valuation-categories">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/e-valuation-categories" ? "link-active" : ""}`} to="/e-valuation-categories" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -140,12 +170,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <CategoryIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation Categories' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='E Valuation Categories' />
                 </ListItemButton>
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/evaluations" ? "link-active" : ""}`} to="/evaluations">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname.startsWith("/evaluations") ? "link-active" : ""}`} to="/evaluations" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -156,12 +186,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='E Valuation' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='E Valuation' />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/blogs" ? "link-active" : ""}`} to="/blogs">
+            {/* <ListItem disablePadding>
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname.startsWith("/blog") ? "link-active" : ""}`} to="/blogs" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -172,12 +202,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ArticleIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Blogs' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Blogs' />
                 </ListItemButton>
               </Link>
-            </ListItem>
-            <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/instalment-plans" ? "link-active" : ""}`} to="/instalment-plans">
+            </ListItem> */}
+            {/* <ListItem disablePadding>
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname.startsWith("/instalment-plans") ? "link-active" : ""}`} to="/instalment-plans" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -188,12 +218,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Instalment Plans' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Instalment Plans' />
                 </ListItemButton>
               </Link>
-            </ListItem>
+            </ListItem> */}
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/pawn-tickets" ? "link-active" : ""}`} to="/pawn-tickets">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname.startsWith("/pawn-tickets") ? "link-active" : ""}`} to="/pawn-tickets" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -204,12 +234,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ConfirmationNumberIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Pawn Tickets' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Pawn Tickets' />
                 </ListItemButton>
               </Link>
             </ListItem>
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/product-categories" ? "link-active" : ""}`} to="/product-categories">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/product-categories" ? "link-active" : ""}`} to="/product-categories" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -220,12 +250,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <CategoryIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Product Categories' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Product Categories' />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/products" ? "link-active" : ""}`} to="/products">
+            {/* <ListItem disablePadding>
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/products" ? "link-active" : ""}`} to="/products" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -236,12 +266,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Products' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Products' />
                 </ListItemButton>
               </Link>
-            </ListItem>
-            <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/projects" ? "link-active" : ""}`} to="/projects">
+            </ListItem> */}
+            {/* <ListItem disablePadding>
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/projects" ? "link-active" : ""}`} to="/projects" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -252,12 +282,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <ArchiveIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Projects' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Projects' />
                 </ListItemButton>
               </Link>
-            </ListItem>
+            </ListItem> */}
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/roles" ? "link-active" : ""}`} to="/roles">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/roles" ? "link-active" : ""}`} to="/roles" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -268,12 +298,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <SupervisorAccountIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Roles' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Roles' />
                 </ListItemButton>
               </Link>
             </ListItem>
-            <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/stories" ? "link-active" : ""}`} to="/stories">
+            {/* <ListItem disablePadding>
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/stories" ? "link-active" : ""}`} to="/stories" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -284,12 +314,12 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <WebStoriesIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Stories' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Stories' />
                 </ListItemButton>
               </Link>
-            </ListItem>
+            </ListItem> */}
             <ListItem disablePadding>
-              <Link className={`flex w-full items-center gap-3 link ${location.pathname === "/users" ? "link-active" : ""}`} to="/users">
+              <Link className={`flex w-full items-center gap-3 link ${location.pathname.startsWith("/users") ? "link-active" : ""}`} to="/users" onClick={handleLinkClick}>
                 <ListItemButton className="menu-link">
                   <ListItemIcon
                     sx={{
@@ -300,13 +330,13 @@ function DefaultLayoutInner({ children }: Props) {
                   >
                     <AccountBoxIcon />
                   </ListItemIcon>
-                  <ListItemText sx={{ opacity: open ? 1 : 0 }} primary='Users' />
+                  <ListItemText sx={{ opacity: open ? 1 : 0, marginLeft: "6px" }} primary='Users' />
                 </ListItemButton>
               </Link>
             </ListItem>
           </List>
         </Drawer>
-        <Box component='main' sx={{ flexGrow: 1, padding: "5rem 3rem", width: "calc(100% - 240px)" }}>
+        <Box component='main' sx={{ flexGrow: 1, padding: "5rem", width: "calc(100% - 240px)", "@media (max-width: 900px)":{ padding: "5rem 2rem" } }}>
           {children}
           <Outlet />
         </Box>

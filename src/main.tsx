@@ -7,6 +7,7 @@ import theme from "./theme";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { AppProvider } from "@/context/app.context";
+import config from "src/constants/config";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,9 +18,11 @@ const queryClient = new QueryClient({
   }
 });
 
+const baseUrl = config.publicUrl;
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename={baseUrl}>
       <QueryClientProvider client={queryClient}>
         <AppProvider>
           <ThemeProvider theme={theme}>

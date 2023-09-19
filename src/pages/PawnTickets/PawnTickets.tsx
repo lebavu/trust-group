@@ -1,6 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
@@ -20,15 +20,25 @@ import {
   DialogTitle,
   Typography,
   Pagination,
-  Stack,
   Skeleton,
   InputAdornment,
   Select,
   MenuItem,
   FormControl,
   FormHelperText,
-  InputLabel
+  InputLabel,
+  Checkbox,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ModeEditSharpIcon from "@mui/icons-material/ModeEditSharp";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { PawnTickets } from "@/api/types";
@@ -38,7 +48,10 @@ import { fetchPawnTickets, createPawnTicket, deletePawnTicket } from "@/api/pawn
 import DateTime from "@/components/DateTime";
 import http from "@/utils/http";
 import { pawnTicketSchema } from "@/utils/rules";
+import Popover from "@/components/Popover";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
+type SelectedPawnTickets = { [userId: string]: boolean };
 
 const fetchUserName = async (userId: string) => {
   const response = await http.get(`users/${userId}`);
@@ -118,6 +131,33 @@ const PawnTicketComponent: React.FC = () => {
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [pawnTicketToDelete, setPawnTicketToDelete] = useState<PawnTickets | null>(null);
   const [selectedUserIdFilter, setSelectedUserIdFilter] = useState<string>("");
+  const [selectedPawnTickets, setSelectedPawnTickets] = useState<SelectedPawnTickets>({});
+  const [popoverInfo, setPopoverInfo] = useState<{ [key: string]: { open: boolean; anchorEl: HTMLElement | null } }>({});
+
+  const handleOpenPopover = (branchId: string, event: React.MouseEvent<HTMLElement>) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { open: true, anchorEl: event.currentTarget },
+    }));
+  };
+
+  const handleClosePopover = (branchId: string) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { ...prevInfo[branchId], open: false },
+    }));
+  };
+
+  const handleSelectAll = () => {
+    const areAllSelected = Object.values(selectedPawnTickets).every((selected) => selected);
+
+    const updatedSelectedPawnTickets = { ...selectedPawnTickets };
+
+    pawnTickets.forEach((pawnTickets) => {
+      updatedSelectedPawnTickets[pawnTickets.id] = !areAllSelected;
+    });
+    setSelectedPawnTickets(updatedSelectedPawnTickets);
+  };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
@@ -144,6 +184,56 @@ const PawnTicketComponent: React.FC = () => {
         setNewPawnTicket((prevNewPawnTicket) => ({
           ...prevNewPawnTicket,
           date: value,
+        }));
+      }
+    } else if (name === "next_renewal") {
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+
+          setNewPawnTicket((prevNewPawnTicket) => ({
+            ...prevNewPawnTicket,
+            next_renewal: formattedDate,
+          }));
+        }
+      }else{
+        setNewPawnTicket((prevNewPawnTicket) => ({
+          ...prevNewPawnTicket,
+          next_renewal: value,
+        }));
+      }
+    }else if (name === "expiry_date") {
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+
+          setNewPawnTicket((prevNewPawnTicket) => ({
+            ...prevNewPawnTicket,
+            expiry_date: formattedDate,
+          }));
+        }
+      }else{
+        setNewPawnTicket((prevNewPawnTicket) => ({
+          ...prevNewPawnTicket,
+          expiry_date: value,
         }));
       }
     } else if (name === "pawn_type") {
@@ -207,7 +297,7 @@ const PawnTicketComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (pawnTicket: PawnTickets) => {
-    navigate(`/update-pawn-ticket/${pawnTicket.id}`);
+    navigate(`/pawn-tickets/update-pawn-ticket/${pawnTicket.id}`);
   };
 
   const closeFormPopup = () => {
@@ -271,6 +361,28 @@ const PawnTicketComponent: React.FC = () => {
     setDeleteConfirmationOpen(false);
     setPawnTicketToDelete(null);
   };
+
+  const handleCheckboxChange = (pawnTicketId: string) => {
+    setSelectedPawnTickets((prevSelectedPawnTickets) => ({
+      ...prevSelectedPawnTickets,
+      [pawnTicketId]: !prevSelectedPawnTickets[pawnTicketId],
+    }));
+  };
+
+  const handleDeleteSelectedPawnTickets = () => {
+    const pawnTicketsToDelete = Object.keys(selectedPawnTickets).filter((pawnTicketId) => selectedPawnTickets[pawnTicketId]);
+    if (pawnTicketsToDelete.length > 0) {
+      pawnTicketsToDelete.forEach((pawnTicketId) => {
+        deletePawnTicketMutation.mutate(pawnTicketId);
+      });
+      setSelectedPawnTickets({});
+    }
+  };
+  const countSelectedPawnTickets = () => {
+    return Object.values(selectedPawnTickets).filter((selected) => selected).length;
+  };
+  const selectedPawnTicketsCount = countSelectedPawnTickets();
+
   const pawnTypeOptions = [
     { value: 0, label: "Due" },
     { value: 1, label: "Instalment" },
@@ -278,8 +390,8 @@ const PawnTicketComponent: React.FC = () => {
     { value: 3, label: "Expired" },
   ];
   const pawnStatusOptions = [
-    { value: 0, label: "Pending" },
-    { value: 1, label: "Successful" },
+    { value: 0, label: "Pending", class: "pending" },
+    { value: 1, label: "Successful", class: "successful" },
   ];
   const uniqueUserIds = Array.from(new Set(pawnTickets.map(pawnTicket => pawnTicket.user_id)));
   return (
@@ -291,8 +403,10 @@ const PawnTicketComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         Pawn Tickets List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
+          sx={{ maxWidth: "22rem", width: "100%" }}
           label="Search"
           size="small"
           value={searchKeyword}
@@ -306,11 +420,11 @@ const PawnTicketComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create Pawn Ticket
         </Button>
       </div>
-      <Box sx={{ maxWidth: "20rem" }} mb={"2rem"}>
+      <Box sx={{ maxWidth: "22rem" }} mb={"2rem"}>
         <FormControl fullWidth >
           <InputLabel size="small" id="select-filter-label">Users</InputLabel>
           <Select
@@ -319,6 +433,7 @@ const PawnTicketComponent: React.FC = () => {
             size="small"
             label="All Users"
             value={selectedUserIdFilter}
+            IconComponent={ExpandMoreIcon}
             onChange={(event) => setSelectedUserIdFilter(event.target.value)}
           >
             <MenuItem value="">All Roles</MenuItem>
@@ -335,55 +450,49 @@ const PawnTicketComponent: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>
-                {pawnTickets.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? (
+                  <Checkbox
+                    indeterminate={
+                      Object.values(selectedPawnTickets).some((selected) => selected) &&
+                      Object.values(selectedPawnTickets).some((selected) => !selected)
+                    }
+                    checked={Object.values(selectedPawnTickets).every((selected) => selected)}
+                    onChange={handleSelectAll}
+                  />
+                ) : (
+                  <Skeleton  height={60} animation="wave" />
+                )
+                }
               </TableCell>
               <TableCell>
-                {pawnTickets.length > 0 ? "User Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "User Id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {pawnTickets.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Pawn Status" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Pawn Status" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {pawnTickets.length > 0 ? "Ticket No" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Ticket No" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Paw Type" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Paw Type" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {pawnTickets.length > 0 ? "Pawn Amount" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {pawnTickets.length > 0 ? "Interest Payable" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Pawn Amount" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Downloan Amount" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {pawnTickets.length > 0 ? "Monthly Repayment" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {pawnTickets.length > 0 ? "Already Paid" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {pawnTickets.length > 0 ? "Balance Remaining" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Pawn Date" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Duration" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Next Renewal" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Pawn Date" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Expiry Date" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {pawnTickets.length > 0 ? "Next Renewal" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell align="right">
-                {pawnTickets.length > 0 ? "Expiry Date" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell align="right">
-                {pawnTickets.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {pawnTickets.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -391,39 +500,57 @@ const PawnTicketComponent: React.FC = () => {
             {filteredPawnTickets.length > 0 ? (
               filteredPawnTickets.map((pawnTicket) => (
                 <TableRow key={pawnTicket.id}>
-                  <TableCell>{pawnTicket.id}</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedPawnTickets[pawnTicket.id] || false}
+                      onChange={() => handleCheckboxChange(pawnTicket.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     {pawnTicket.user_id && (
                       <UserName userId={pawnTicket.user_id} />
                     )}
                   </TableCell>
-                  <TableCell>{pawnTicket.name}</TableCell>
                   <TableCell>
-                    {pawnStatusOptions.find(option => option.value === parseInt(pawnTicket.pawn_status))?.label || "Unknown"}
+                    <strong>{pawnTicket.name}</strong>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`status-cell ${pawnStatusOptions.find(option => option.value == parseInt(pawnTicket.pawn_status))?.class || "unknown"}`}>
+                      {pawnStatusOptions.find(option => option.value === parseInt(pawnTicket.pawn_status))?.label || "Unknown"}
+                    </span>
                   </TableCell>
                   <TableCell>{pawnTicket.ticket_no}</TableCell>
                   <TableCell>
                     {pawnTypeOptions.find(option => option.value == pawnTicket.pawn_type)?.label || "Unknown"}
                   </TableCell>
                   <TableCell>{pawnTicket.pawn_amount}</TableCell>
-                  <TableCell>{pawnTicket.interest_payable}</TableCell>
-                  <TableCell>{pawnTicket.downloan_amount}</TableCell>
-                  <TableCell>{pawnTicket.monthly_repayment}</TableCell>
-                  <TableCell>{pawnTicket.already_paid}</TableCell>
-                  <TableCell>{pawnTicket.balance_remaining}</TableCell>
-                  <TableCell>{pawnTicket.duration}</TableCell>
                   <TableCell>{pawnTicket.pawn_date ? new Date(pawnTicket.pawn_date).toLocaleString() : ""}</TableCell>
                   <TableCell>{pawnTicket.next_renewal ? new Date(pawnTicket.next_renewal).toLocaleString() : ""}</TableCell>
                   <TableCell>{pawnTicket.expiry_date ? new Date(pawnTicket.expiry_date).toLocaleString() : ""}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} justifyContent={"end"}>
-                      <Button variant="contained" color="primary" onClick={() => openEditFormPopup(pawnTicket)}>
-                        Edit
-                      </Button>
-                      <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(pawnTicket)}>
-                        Delete
-                      </Button>
-                    </Stack>
+                  <TableCell className="!text-right">
+                    <IconButton color="primary" onClick={(e) => handleOpenPopover(pawnTicket.id, e)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Popover
+                      open={popoverInfo[pawnTicket.id]?.open || false}
+                      anchorEl={popoverInfo[pawnTicket.id]?.anchorEl}
+                      onClose={() => handleClosePopover(pawnTicket.id)}
+                    >
+                      <List>
+                        <ListItemButton onClick={() => openEditFormPopup(pawnTicket)}>
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <ModeEditSharpIcon color="primary"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Edit" />
+                        </ListItemButton>
+                        <ListItemButton onClick={() => openDeleteConfirmation(pawnTicket)} >
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <DeleteRoundedIcon color="secondary"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Delete" className="text-secondary"/>
+                        </ListItemButton>
+                      </List>
+                    </Popover>
                   </TableCell>
                 </TableRow>
               ))
@@ -431,7 +558,7 @@ const PawnTicketComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={17}>
                   {pawnTickets.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No pawn tickets found.</p>
                   )}
@@ -441,6 +568,13 @@ const PawnTicketComponent: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {Object.values(selectedPawnTickets).some((selected) => selected) && (
+        <div className="mt-6">
+          <Button variant="outlined" startIcon={<DeleteRoundedIcon />} color="primary" onClick={handleDeleteSelectedPawnTickets} disabled={selectedPawnTicketsCount === 0}>
+            Delete Selected ({selectedPawnTicketsCount})
+          </Button>
+        </div>
+      )}
       <Box mt={2} display="flex" justifyContent="center">
         <Pagination
           count={totalPages}
@@ -453,7 +587,7 @@ const PawnTicketComponent: React.FC = () => {
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "100rem" } }}>
         <DialogTitle className="!pt-10">{selectedPawnTicket ? "Edit Pawn Ticket" : "Create New Pawn Ticket"}</DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-[2.5rem] !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12 !pt-6">
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
             <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
               <InputLabel size="small" id="select-user">User</InputLabel>
@@ -463,6 +597,7 @@ const PawnTicketComponent: React.FC = () => {
                 size="small"
                 name="user_id"
                 value={newPawnTicket.user_id}
+                IconComponent={ExpandMoreIcon}
                 onChange={handleInputChange}
                 variant="outlined"
                 error={!!newPawnTicket.errors?.user_id}
@@ -496,6 +631,7 @@ const PawnTicketComponent: React.FC = () => {
                 size="small"
                 name="pawn_type"
                 value={newPawnTicket.pawn_type.toString()}
+                IconComponent={ExpandMoreIcon}
                 onChange={handleInputChange}
                 variant="outlined"
                 error={!!newPawnTicket.errors?.pawn_type}
@@ -601,7 +737,7 @@ const PawnTicketComponent: React.FC = () => {
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
-            <div>
+            <div className="relative">
               <DateTime
                 label="Pawn Date"
                 value={newPawnTicket.pawn_date}
@@ -616,7 +752,7 @@ const PawnTicketComponent: React.FC = () => {
                 }}
               />
               {newPawnTicket.errors?.pawn_date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
             <TextField
@@ -683,7 +819,6 @@ const PawnTicketComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };

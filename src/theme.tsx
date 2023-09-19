@@ -1,7 +1,11 @@
 import { createTheme } from "@mui/material/styles";
 import { red } from "@mui/material/colors";
 
-// A custom theme for this app
+const placehodlerStyle = {
+  opacity: 0.7,
+  color: "#C8C8C8",
+  fontSize: "1.4rem",
+};
 const theme = createTheme({
   palette: {
     primary: {
@@ -15,7 +19,7 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontSize: 19.6,
+    fontSize: 21,
     h2: {
       fontSize: "2.8rem",
       fontWeight: 700,
@@ -38,7 +42,7 @@ const theme = createTheme({
       fontWeight: 500,
     },
     h6: {
-      fontSize: "1.8rem",
+      fontSize: "1.6rem",
       fontWeight: 500,
     },
   },
@@ -46,9 +50,57 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
+          // height: "100px",
+          textTransform: "capitalize",
+          padding: "0 1.5rem",
+          lineHeight: "4.4rem",
+          height: "4.4rem",
+          whiteSpace: "nowrap",
+          minWidth: "8rem",
+          borderRadius: ".8rem",
           "&.MuiButton-containedSecondary": {
             color: "#fff"
           },
+        },
+      },
+    },
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          fontSize: "1.4rem",
+          fontWeight: 400,
+          color: "#000",
+          lineHeight: "2.5rem",
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: () => ({
+          fontSize: "1.4rem",
+          "> input": {
+            fontSize: "1.4rem",
+            height: "4.4rem",
+            padding: "0 1.6rem",
+            borderRadius: ".8rem!important",
+            "&::placeholder": placehodlerStyle,
+          },
+          "fieldset": {
+            borderWidth: "1px !important",
+            borderColor: "rgba(145, 158, 171, 0.2)",
+            borderRadius: ".8rem"
+          },
+        }),
+      },
+    },
+    MuiOutlinedInput: {
+      styleOverrides: {
+        root: {
+          ".MuiOutlinedInput-input.MuiSelect-select":{
+            minHeight: "4.4rem",
+            paddingBlock: "0",
+            lineHeight: "4.4rem"
+          }
         },
       },
     },

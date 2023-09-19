@@ -75,6 +75,7 @@ export interface User {
   email: string;
   profile_image: string;
   role_id: string;
+  password: string;
   new_password: string;
   verified_code_forgot: string;
   errors?: {
@@ -83,6 +84,7 @@ export interface User {
     profile_image?: string;
     handphone_number?: string;
     role_id?: string;
+    password?: string;
     new_password?: string;
     verified_code_forgot?: string;
   };
@@ -207,4 +209,13 @@ export interface EValuation{
     branch_id?: string;
   };
 }
-
+export interface MetaData {
+  per_page: number;
+  total: number;
+  current_page: number;
+  last_page: number
+}
+export interface EValuationsResponse {
+  data: EValuation[];
+  meta: MetaData;
+}

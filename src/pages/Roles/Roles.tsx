@@ -1,6 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { Helmet } from "react-helmet-async";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
@@ -23,11 +23,17 @@ import {
   Pagination,
   Skeleton,
   Stack,
-  InputAdornment
+  InputAdornment,
+  Checkbox
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import { Search } from "@mui/icons-material";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { Role } from "@/api/types";
 import { fetchRoles, createRole, updateRole, deleteRole } from "@/api/role.api";
+import Breadcrumbs from "@/components/Breadcrumbs";
+
+type SelectedRoles = { [roleId: string]: boolean };
 
 // Schema for validating the Role object
 const roleSchema = yup.object().shape({
@@ -39,7 +45,6 @@ const roleSchema = yup.object().shape({
 const RoleComponent: React.FC = () => {
   const queryClient = useQueryClient();
   const { data: roles = [] } = useQuery<Role[]>("roles", fetchRoles);
-
   const createRoleMutation = useMutation(createRole, {
     onSuccess: () => {
       queryClient.invalidateQueries("roles");
@@ -83,7 +88,19 @@ const RoleComponent: React.FC = () => {
   const rolesPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<Role | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<SelectedRoles>({});
 
+  const handleSelectAll = () => {
+    const areAllSelected = Object.values(selectedRoles).every((selected) => selected);
+
+    const updatedSelectedRoles = { ...selectedRoles };
+
+    roles.forEach((role) => {
+      updatedSelectedRoles[role.id] = !areAllSelected;
+    });
+
+    setSelectedRoles(updatedSelectedRoles);
+  };
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewRole((prevNewRole) => ({
@@ -218,6 +235,28 @@ const RoleComponent: React.FC = () => {
     setRoleToDelete(null);
   };
 
+  const handleCheckboxChange = (roleId: string) => {
+    setSelectedRoles((prevSelectedRoles) => ({
+      ...prevSelectedRoles,
+      [roleId]: !prevSelectedRoles[roleId],
+    }));
+  };
+
+  const handleDeleteSelectedRoles = () => {
+    const rolesToDelete = Object.keys(selectedRoles).filter((roleId) => selectedRoles[roleId]);
+    if (rolesToDelete.length > 0) {
+      rolesToDelete.forEach((roleId) => {
+        deleteRoleMutation.mutate(roleId);
+      });
+      // Clear selected roles
+      setSelectedRoles({});
+    }
+  };
+  const countSelectedRoles = () => {
+    return Object.values(selectedRoles).filter((selected) => selected).length;
+  };
+  const selectedRolesCount = countSelectedRoles();
+
   return (
     <div>
       <Helmet>
@@ -227,13 +266,15 @@ const RoleComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         Roles List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
+          sx={{ maxWidth: "22rem", width: "100%" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -242,7 +283,7 @@ const RoleComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create Role
         </Button>
       </div>
@@ -250,17 +291,29 @@ const RoleComponent: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>
-                {roles.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+              <TableCell className="w-[5rem]">
+                {roles.length > 0 ? (
+                  <Checkbox
+                    indeterminate={
+                      Object.values(selectedRoles).some((selected) => selected) &&
+                      Object.values(selectedRoles).some((selected) => !selected)
+                    }
+                    checked={Object.values(selectedRoles).every((selected) => selected)}
+                    onChange={handleSelectAll}
+                  />
+                ) : (
+                  <Skeleton  height={60} animation="wave" />
+                )
+                }
               </TableCell>
               <TableCell>
-                {roles.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {roles.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {roles.length > 0 ? "Role" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {roles.length > 0 ? "Role" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {roles.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {roles.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -268,7 +321,12 @@ const RoleComponent: React.FC = () => {
             {filteredRoles.length > 0 ? (
               filteredRoles.map((role) => (
                 <TableRow key={role.id}>
-                  <TableCell>{role.id}</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedRoles[role.id] || false}
+                      onChange={() => handleCheckboxChange(role.id)}
+                    />
+                  </TableCell>
                   <TableCell>{role.name}</TableCell>
                   <TableCell>{role.role}</TableCell>
                   <TableCell>
@@ -287,7 +345,7 @@ const RoleComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={5}>
                   {roles.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No roles found.</p>
                   )}
@@ -297,6 +355,13 @@ const RoleComponent: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {Object.values(selectedRoles).some((selected) => selected) && (
+        <div className="mt-6">
+          <Button variant="outlined" startIcon={<DeleteRoundedIcon />} color="primary" onClick={handleDeleteSelectedRoles} disabled={selectedRolesCount === 0}>
+            Delete Selected ({selectedRolesCount})
+          </Button>
+        </div>
+      )}
       <Box mt={2} display="flex" justifyContent="center">
         <Pagination
           count={totalPages}
@@ -309,7 +374,7 @@ const RoleComponent: React.FC = () => {
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
         <DialogTitle className="!pt-10">{selectedRole ? "Edit Role" : "Create New Role"}</DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12  !pt-6">
           <TextField
             name="name"
             label="Name"
@@ -371,9 +436,12 @@ const RoleComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };
 
 export default RoleComponent;
+
+
+
+

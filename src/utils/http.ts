@@ -2,7 +2,6 @@ import axios, { AxiosError, type AxiosInstance } from "axios";
 import HttpStatusCode from "@/constants/httpStatusCode.enum";
 import { toast } from "react-toastify";
 import { AuthResponse } from "@/types/auth.type";
-// import { User } from "@/types/user.type";
 import {
   clearLS,
   getAccessTokenFromLS,
@@ -66,7 +65,7 @@ export class Http {
           clearLS();
           this.accessToken = "";
           toast.error(error.response?.data.data?.message || error.response?.data.message);
-          // window.location.reload()
+          // window.location.reload();
         }
         return Promise.reject(error);
       }

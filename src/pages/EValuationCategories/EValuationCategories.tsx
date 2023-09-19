@@ -1,6 +1,6 @@
 import { useState, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
@@ -24,12 +24,14 @@ import {
   Skeleton,
   InputAdornment
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import { Helmet } from "react-helmet-async";
 import { Search } from "@mui/icons-material";
 // Replace with actual API types
 import { EValuationCategory } from "@/api/types";
 // Replace with actual API functions
 import { getEValuationsCategoriesById, fetchEValuationsCategories, createEValuationCategory, updateEValuationCategory, deleteEValuationCategory } from "@/api/e-valuation-category.api";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 // Schema for validating the EValuationCategory object
 const eValuationCategorySchema = yup.object().shape({
@@ -249,13 +251,15 @@ const EValuationCategoryComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         EValuationsCategories List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
+          sx={{ maxWidth: "22rem", width: "100%" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -264,7 +268,7 @@ const EValuationCategoryComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create EValuationCategory
         </Button>
       </div>
@@ -273,19 +277,19 @@ const EValuationCategoryComponent: React.FC = () => {
           <TableHead>
             <TableRow>
               <TableCell>
-                {eValuationsCategories.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuationsCategories.length > 0 ? "Id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {eValuationsCategories.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuationsCategories.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {eValuationsCategories.length > 0 ? "desc" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuationsCategories.length > 0 ? "desc" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuationsCategories.length > 0 ? "Parent" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuationsCategories.length > 0 ? "Parent" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {eValuationsCategories.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuationsCategories.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -313,7 +317,7 @@ const EValuationCategoryComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={5}>
                   {eValuationsCategories.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No eValuationsCategories found.</p>
                   )}
@@ -335,7 +339,7 @@ const EValuationCategoryComponent: React.FC = () => {
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
         <DialogTitle className="!pt-10">{selectedEValuationCategory ? "Edit EValuationCategory" : "Create New EValuationCategory"}</DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12  !pt-6">
           <TextField
             name="name"
             label="Name"
@@ -410,7 +414,6 @@ const EValuationCategoryComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };

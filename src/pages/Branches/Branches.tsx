@@ -1,34 +1,40 @@
 import { ReactNode, useState, ChangeEvent } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
   Button,
   TextField,
-  Box,
-  Table,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
   Typography,
-  Pagination,
-  Stack,
   Skeleton,
-  InputAdornment
+  InputAdornment,
+  IconButton,
+  List,
+  Grid,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
+
+import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import ModeEditSharpIcon from "@mui/icons-material/ModeEditSharp";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { Helmet } from "react-helmet-async";
 import { Search } from "@mui/icons-material";
 import { Branch } from "@/api/types";
 import { fetchBranches, createBranch, updateBranch, deleteBranch } from "@/api/branch.api";
 import MediaManager from "@/components/Media";
+import Popover from "@/components/Popover";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import DataTable from "@/components/Table";
+import Image from "@/components/Image";
 
 const branchSchema = yup.object().shape({
   name: yup.string().required("Name is required"),
@@ -39,16 +45,15 @@ const branchSchema = yup.object().shape({
 // Function to render the image URL or file preview
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
-    return <img src={imageUrl} alt="Branch" style={{ width: "5rem" }} />;
+    return <Image src={imageUrl} alt="Branch" style={{ width: "5rem" }} />;
   } else if (imageUrl instanceof File) {
     const temporaryUrl = URL.createObjectURL(imageUrl);
-    return <img src={temporaryUrl} alt="Branch" style={{ width: "5rem" }} />;
+    return <Image src={temporaryUrl} alt="Branch" style={{ width: "5rem" }} />;
   } else {
     return null;
   }
 };
 
-// Main component for managing branches
 const BranchComponent: React.FC = () => {
   const queryClient = useQueryClient();
 
@@ -94,11 +99,32 @@ const BranchComponent: React.FC = () => {
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage] = useState(1);
   const branchesPerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [branchToDelete, setBranchToDelete] = useState<Branch | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [popoverInfo, setPopoverInfo] = useState<{ [key: string]: { open: boolean; anchorEl: HTMLElement | null } }>({});
+
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
+  const handleRowSelectionChange = (newSelection: any[]) => {
+    setSelectedRows(newSelection);
+  };
+
+  const handleOpenPopover = (branchId: string, event: React.MouseEvent<HTMLElement>) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { open: true, anchorEl: event.currentTarget },
+    }));
+  };
+
+  const handleClosePopover = (branchId: string) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { ...prevInfo[branchId], open: false },
+    }));
+  };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -112,9 +138,6 @@ const BranchComponent: React.FC = () => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setCurrentPage(value);
-  };
 
   const indexOfLastBranch = currentPage * branchesPerPage;
   const indexOfFirstBranch = indexOfLastBranch - branchesPerPage;
@@ -128,8 +151,6 @@ const BranchComponent: React.FC = () => {
     }
     return false;
   });
-
-  const totalPages = Math.ceil(branches.length / branchesPerPage);
 
   const openFormPopup = () => {
     setSelectedBranch(null);
@@ -203,7 +224,6 @@ const BranchComponent: React.FC = () => {
         image_url: newBranch.image_url || selectedBranch?.image_url || "",
       };
 
-      // Check if the image URL is not changed, use the current value
       if (!newBranch.image_url) {
         updatedBranch.image_url = selectedBranch?.image_url || "";
       }
@@ -236,6 +256,21 @@ const BranchComponent: React.FC = () => {
     }
   };
 
+  const handleDeleteSelectedRows = async (selectedRows:any) => {
+    if (selectedRows.length === 0) {
+      return;
+    }
+    try {
+      await Promise.all(selectedRows.map((branchId:any) => deleteBranchMutation.mutateAsync(branchId)));
+      queryClient.invalidateQueries("branches");
+      setSelectedRows([]);
+      toast.success("Selected branches have been deleted successfully.");
+    } catch (error) {
+      console.error("Error while deleting branches:", error);
+      toast.error("An error occurred while deleting selected branches.");
+    }
+  };
+
   const handleDeleteBranch = (branch: Branch | null) => {
     if (branch) {
       deleteBranchMutation.mutate(branch.id);
@@ -243,6 +278,7 @@ const BranchComponent: React.FC = () => {
     setDeleteConfirmationOpen(false);
     setBranchToDelete(null);
   };
+
 
   const handleSelectedMedia = (media: any) => {
     setSelectedImageUrl(media.image_url);
@@ -252,6 +288,62 @@ const BranchComponent: React.FC = () => {
     }));
   };
 
+  const pageSizeOptions = [5, 10, 20, 50, 100];
+  const columns = [
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
+    },
+    {
+      field: "address",
+      headerName: "Address",
+      flex: 1,
+    },
+    {
+      field: "image_url",
+      headerName: "Image",
+      flex: 1,
+      renderCell: (params: any) => {
+        return renderImageUrl(params.value);
+      },
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      width: 100,
+      renderCell: (params: any) => {
+        return (
+          <>
+            <IconButton color="primary" onClick={(e) => handleOpenPopover(params.id, e)}>
+              <MoreVertIcon />
+            </IconButton>
+            <Popover
+              open={popoverInfo[params.id]?.open || false}
+              anchorEl={popoverInfo[params.id]?.anchorEl}
+              onClose={() => handleClosePopover(params.id)}
+            >
+              <List>
+                <ListItemButton onClick={() => openEditFormPopup(params)}>
+                  <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                    <ModeEditSharpIcon color="primary"/>
+                  </ListItemIcon>
+                  <ListItemText primary="Edit" />
+                </ListItemButton>
+                <ListItemButton onClick={() => openDeleteConfirmation(params)} >
+                  <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                    <DeleteRoundedIcon color="secondary"/>
+                  </ListItemIcon>
+                  <ListItemText primary="Delete" className="text-secondary"/>
+                </ListItemButton>
+              </List>
+            </Popover>
+          </>
+        );
+      },
+    },
+  ];
   return (
     <div>
       <Helmet>
@@ -261,13 +353,15 @@ const BranchComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         Branches List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs />
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
+          sx={{ maxWidth: "22rem", width: "100%" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -276,72 +370,41 @@ const BranchComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create Branch
         </Button>
       </div>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                {branches.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {branches.length > 0 ? "Address" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell sx={{ maxWidth: "30rem" }}>
-                {branches.length > 0 ? "Image" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell align="right">{branches.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredBranches.length > 0 ? (
-              filteredBranches.map((branch) => (
-                <TableRow key={branch.id}>
-                  <TableCell>{branch.name}</TableCell>
-                  <TableCell>{branch.address}</TableCell>
-                  <TableCell className="max-w-[30rem] break-words">{renderImageUrl(branch.image_url)}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} justifyContent={"end"}>
-                      <Button variant="contained" color="primary" onClick={() => openEditFormPopup(branch)}>
-                        Edit
-                      </Button>
-                      <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(branch)}>
-                        Delete
-                      </Button>
-                    </Stack>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={4}>
-                  {branches.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
-                  ) : (
-                    <p className="text-[1.6rem] text-center">No branches found.</p>
-                  )}
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <Box mt={2} display="flex" justifyContent="center">
-        <Pagination
-          count={totalPages}
-          page={currentPage}
-          onChange={handlePageChange}
-          color="primary"
-          showFirstButton
-          showLastButton
+      {branches.length === 0 ? (
+        <Grid container spacing={2}>
+          {[...Array(3)].map((_, rowIndex) => (
+            <Grid container item spacing={2} key={rowIndex}>
+              {[...Array(3)].map((_, colIndex) => (
+                <Grid item xs={4} key={colIndex}>
+                  <Skeleton width={"100%"} height={50}/>
+                </Grid>
+              ))}
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={filteredBranches}
+          initialPagination={{
+            page: currentPage,
+            pageSize: branchesPerPage,
+          }}
+          pageSizeOptions={pageSizeOptions}
+          checkboxSelection={true}
+          disableRowSelectionOnClick={true}
+          selectedRows={selectedRows}
+          onRowSelectionModelChange={handleRowSelectionChange}
+          onDeleteRow={handleDeleteSelectedRows}
         />
-      </Box>
+      )}
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "50rem" } }}>
         <DialogTitle className="!pt-10">{selectedBranch ? "Edit Branch" : "Create New Branch"}</DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12  !pt-6">
           <TextField
             name="name"
             label="Name"
@@ -371,7 +434,7 @@ const BranchComponent: React.FC = () => {
             <div>
               <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
               <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                <Image src={selectedImageUrl} classNames="w-full h-full object-cover" alt="Selected Media" />
               </div>
             </div>
           )}
@@ -413,9 +476,9 @@ const BranchComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };
 
 export default BranchComponent;
+

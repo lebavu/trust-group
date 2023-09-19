@@ -1,10 +1,11 @@
-import { ReactNode, useState, ChangeEvent } from "react";
+import { ReactNode, useState, ChangeEvent, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { Helmet } from "react-helmet-async";
 import "react-toastify/dist/ReactToastify.css";
 import * as yup from "yup";
 import {
+  Grid,
   Button,
   TextField,
   Box,
@@ -22,30 +23,47 @@ import {
   Typography,
   Pagination,
   Skeleton,
-  Stack,
   InputAdornment,
   Select,
   MenuItem,
   FormControl,
   FormHelperText,
-  InputLabel
+  InputLabel,
+  Checkbox,
+  IconButton,
+  List,
+  ListItemButton,
+  ListItemText,
+  ListItemIcon,
 } from "@mui/material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ModeEditSharpIcon from "@mui/icons-material/ModeEditSharp";
+import DeleteRoundedIcon from "@mui/icons-material/DeleteRounded";
 import { type SelectChangeEvent } from "@mui/material";
 import { Search } from "@mui/icons-material";
-import { EValuation } from "@/api/types";
+import { EValuation, EValuationsResponse, MetaData } from "@/api/types";
 import { fetchEValuations, createEValuation, deleteEValuation } from "@/api/e-valuation.api";
 import DateTime from "@/components/DateTime";
 import MediaManager from "@/components/Media";
 import http from "@/utils/http";
 import { eValuationSchema } from "@/utils/rules";
 import { useNavigate } from "react-router-dom";
+import RichTextEditor from "@/components/Editor";
+import Popover from "@/components/Popover";
+import Breadcrumbs from "@/components/Breadcrumbs";
+import Image from "@/components/Image";
+import DataTable from "@/components/Table";
+
+type SelectedEValuations = { [eValuationId: string]: boolean };
 
 const renderImageUrl = (imageUrl: string | File | undefined): ReactNode => {
   if (typeof imageUrl === "string") {
-    return <img src={imageUrl} alt="User" style={{ width: "5rem" }} />;
+    return <Image src={imageUrl} alt="User" style={{ width: "5rem" }} />;
   } else if (imageUrl instanceof File) {
     const temporaryUrl = URL.createObjectURL(imageUrl);
-    return <img src={temporaryUrl} alt="User" style={{ width: "5rem" }} />;
+    return <Image src={temporaryUrl} alt="User" style={{ width: "5rem" }} />;
   } else {
     return null;
   }
@@ -100,7 +118,11 @@ const EValuationComponent: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: users = [] } = useQuery("users", fetchUsers);
-  const { data: eValuations = [] } = useQuery<EValuation[]>("eValuations", fetchEValuations);
+  const { data: eValuationsResponse = {} as EValuationsResponse } = useQuery<EValuationsResponse>(
+    "eValuations",
+    () => fetchEValuations(1)
+  );
+
   const { data: branches = [] } = useQuery("branches", fetchBranches);
   const { data: categories = [] } = useQuery("categories", fetchCategories);
   const createEValuationMutation = useMutation(createEValuation, {
@@ -146,11 +168,51 @@ const EValuationComponent: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const eValuationsPerPage = 10;
+  const tablePerPage = 10;
   const [deleteConfirmationOpen, setDeleteConfirmationOpen] = useState(false);
   const [eValuationToDelete, setEValuationToDelete] = useState<EValuation | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [selectedUserIdFilter, setSelectedUserIdFilter] = useState<string>("");
+  const [selectedEValuations, setSelectedEValuations] = useState<SelectedEValuations>({});
+  const [popoverInfo, setPopoverInfo] = useState<{ [key: string]: { open: boolean; anchorEl: HTMLElement | null } }>({});
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+
+  const handleRowSelectionChange = (newSelection: any[]) => {
+    setSelectedRows(newSelection);
+  };
+
+  const handleOpenPopover = (branchId: string, event: React.MouseEvent<HTMLElement>) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { open: true, anchorEl: event.currentTarget },
+    }));
+  };
+
+  const handleClosePopover = (branchId: string) => {
+    setPopoverInfo((prevInfo) => ({
+      ...prevInfo,
+      [branchId]: { ...prevInfo[branchId], open: false },
+    }));
+  };
+
+  const handleSelectAll = () => {
+    const areAllSelected = Object.values(selectedEValuations).every((selected) => selected);
+
+    const updatedSelectedEValuations = { ...selectedEValuations };
+
+    eValuations.forEach((eValuations) => {
+      updatedSelectedEValuations[eValuations.id] = !areAllSelected;
+    });
+
+    setSelectedEValuations(updatedSelectedEValuations);
+  };
+
+  const { data: eValuations = [], meta = {} as MetaData } = eValuationsResponse;
+  const { per_page, total } = meta as MetaData;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [eValuationsResponse]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
     const { name, value } = event.target;
@@ -179,7 +241,33 @@ const EValuationComponent: React.FC = () => {
           date: value,
         }));
       }
-    }  else if (name === "status") {
+    }
+    else if (name === "appointment_date") {
+      if (value) {
+        const parsedDate = new Date(value);
+        if (!isNaN(parsedDate.getTime())) {
+          const formattedDate = `${parsedDate.getFullYear()}-${(parsedDate.getMonth() + 1)
+            .toString()
+            .padStart(2, "0")}-${parsedDate.getDate().toString().padStart(2, "0")} ${parsedDate
+            .getHours()
+            .toString()
+            .padStart(2, "0")}:${parsedDate.getMinutes().toString().padStart(2, "0")}:${parsedDate
+            .getSeconds()
+            .toString()
+            .padStart(2, "0")}`;
+
+          setNewEValuation((prevNewEValuation) => ({
+            ...prevNewEValuation,
+            appointment_date: formattedDate,
+          }));
+        }
+      }else{
+        setNewEValuation((prevNewEValuation) => ({
+          ...prevNewEValuation,
+          appointment_date: value,
+        }));
+      }
+    } else if (name === "status") {
       const intValue = parseInt(value, 10);
       setNewEValuation((prevNewEValuation) => ({
         ...prevNewEValuation,
@@ -197,24 +285,30 @@ const EValuationComponent: React.FC = () => {
     setSearchKeyword(event.target.value);
   };
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = async (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
+    await queryClient.prefetchQuery("eValuations", () => fetchEValuations(value));
   };
 
-  const indexOfLastEValuation = currentPage * eValuationsPerPage;
-  const indexOfFirstEValuation = indexOfLastEValuation - eValuationsPerPage;
-  const currentEValuations = eValuations.slice(indexOfFirstEValuation, indexOfLastEValuation);
 
+  const indexOfLastEValuation = currentPage * per_page;
+  const indexOfFirstEValuation = indexOfLastEValuation - per_page;
+  const currentEValuations = eValuations.slice(
+    indexOfFirstEValuation,
+    indexOfLastEValuation
+  );
   const filteredEValuations = currentEValuations.filter((eValuation) => {
     const isMatchingUser = !selectedUserIdFilter || eValuation.user_id === selectedUserIdFilter;
     if (eValuation && eValuation.name && eValuation.user_id) {
-      const nameMatch = eValuation.name.toLowerCase().includes(searchKeyword.toLowerCase());
-      return isMatchingUser && (nameMatch);
+      const nameMatch = eValuation.name
+        .toLowerCase()
+        .includes(searchKeyword.toLowerCase());
+      return isMatchingUser && nameMatch;
     }
     return false;
   });
 
-  const totalPages = Math.ceil(eValuations.length / eValuationsPerPage);
+  const totalPages = Math.ceil(total / per_page) || 1;
 
   const handleSelectedMedia = (media: any) => {
     setSelectedImageUrl(media.image_url);
@@ -226,6 +320,7 @@ const EValuationComponent: React.FC = () => {
 
   const openFormPopup = () => {
     setSelectedEValuation(null);
+    setSelectedImageUrl("");
     setNewEValuation({
       id: "",
       user_id: "",
@@ -248,11 +343,12 @@ const EValuationComponent: React.FC = () => {
   };
 
   const openEditFormPopup = (eValuation: EValuation) => {
-    navigate(`/update-e-valuation/${eValuation.id}`);
+    navigate(`/evaluations/update-e-valuation/${eValuation.id}`);
   };
 
   const closeFormPopup = () => {
     setSelectedEValuation(null);
+    setSelectedImageUrl("");
     setOpen(false);
   };
 
@@ -305,6 +401,44 @@ const EValuationComponent: React.FC = () => {
     }
   };
 
+  const handleCheckboxChange = (eValuationId: string) => {
+    setSelectedEValuations((prevSelectedEValuations) => ({
+      ...prevSelectedEValuations,
+      [eValuationId]: !prevSelectedEValuations[eValuationId],
+    }));
+  };
+
+  const handleDeleteSelectedEValuations = () => {
+    const eValuationsToDelete = Object.keys(selectedEValuations).filter((eValuationId) => selectedEValuations[eValuationId]);
+    if (eValuationsToDelete.length > 0) {
+      eValuationsToDelete.forEach((eValuationId) => {
+        deleteEValuationMutation.mutate(eValuationId);
+      });
+      // Clear selected EValuations
+      setSelectedEValuations({});
+    }
+  };
+
+  const handleDeleteSelectedRows = async (selectedRows:any) => {
+    if (selectedRows.length === 0) {
+      return;
+    }
+    try {
+      await Promise.all(selectedRows.map((id:any) => deleteEValuationMutation.mutateAsync(id)));
+      queryClient.invalidateQueries("eValuations");
+      setSelectedRows([]);
+      toast.success("Selected e-valuations have been deleted successfully.");
+    } catch (error) {
+      console.error("Error while deleting e-valuations:", error);
+      toast.error("An error occurred while deleting selected e-valuations.");
+    }
+  };
+
+  const countSelectedEValuations = () => {
+    return Object.values(selectedEValuations).filter((selected) => selected).length;
+  };
+  const selectedEValuationsCount = countSelectedEValuations();
+
   const handleDeleteEValuation = (eValuation: EValuation | null) => {
     if (eValuation) {
       deleteEValuationMutation.mutate(eValuation.id);
@@ -312,11 +446,99 @@ const EValuationComponent: React.FC = () => {
     setDeleteConfirmationOpen(false);
     setEValuationToDelete(null);
   };
+
+
   const uniqueUserIds = Array.from(new Set(eValuations.map(eValuation => eValuation.user_id)));
   const EVStatusOptions = [
-    { value: 0, label: "Pending" },
-    { value: 1, label: "On Progress" },
-    { value: 2, label: "Completed" },
+    { value: 0, label: "Pending", class: "pending" },
+    { value: 1, label: "On Progress", class: "progress" },
+    { value: 2, label: "Completed", class: "completed" },
+  ];
+  const pageSizeOptions = [5, 10, 20, 50, 100];
+  const columns = [
+    {
+      field: "user_id",
+      headerName: "User Id",
+      flex: 1,
+    },
+    {
+      field: "category_id",
+      headerName: "Category Id",
+      flex: 1,
+    },
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 1,
+    },
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
+    },
+    {
+      field: "price",
+      headerName: "Price",
+      flex: 1,
+    },
+    {
+      field: "image",
+      headerName: "Image",
+      flex: 1,
+      renderCell: (params: any) => {
+        return renderImageUrl(params.value);
+      },
+    },
+    {
+      field: "date",
+      headerName: "Date",
+      flex: 1,
+    },
+    {
+      field: "appointment_date",
+      headerName: "Appointment Date",
+      flex: 1,
+    },
+    {
+      field: "Branch Id",
+      headerName: "branch_id",
+      flex: 1,
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      width: 100,
+      renderCell: (params: any) => {
+        return (
+          <>
+            <IconButton color="primary" onClick={(e) => handleOpenPopover(params.id, e)}>
+              <MoreVertIcon />
+            </IconButton>
+            <Popover
+              open={popoverInfo[params.id]?.open || false}
+              anchorEl={popoverInfo[params.id]?.anchorEl}
+              onClose={() => handleClosePopover(params.id)}
+            >
+              <List>
+                <ListItemButton onClick={() => openEditFormPopup(params)}>
+                  <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                    <ModeEditSharpIcon color="primary"/>
+                  </ListItemIcon>
+                  <ListItemText primary="Edit" />
+                </ListItemButton>
+                <ListItemButton onClick={() => openDeleteConfirmation(params)} >
+                  <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                    <DeleteRoundedIcon color="secondary"/>
+                  </ListItemIcon>
+                  <ListItemText primary="Delete" className="text-secondary"/>
+                </ListItemButton>
+              </List>
+            </Popover>
+          </>
+        );
+      },
+    },
   ];
   return (
     <div>
@@ -327,13 +549,15 @@ const EValuationComponent: React.FC = () => {
       <Typography variant="h3" mb={"3rem"}>
         EValuations List
       </Typography>
-      <div className="mb-10 flex items-center justify-between gap-3">
+      <Breadcrumbs/>
+      <div className="mb-10 flex items-center justify-between gap-3 flex-wrap">
         <TextField
           label="Search"
           size="small"
           value={searchKeyword}
           onChange={handleSearchChange}
           variant="outlined"
+          sx={{ maxWidth: "22rem", width: "100%" }}
           InputProps={{
             endAdornment: (
               <InputAdornment position='end'>
@@ -342,11 +566,11 @@ const EValuationComponent: React.FC = () => {
             )
           }}
         />
-        <Button variant="contained" color="primary" onClick={openFormPopup}>
+        <Button variant="contained" color="primary" startIcon={<AddIcon />} onClick={openFormPopup}>
           Create EValuation
         </Button>
       </div>
-      <Box sx={{ maxWidth: "20rem" }} mb={"2rem"}>
+      <Box sx={{ maxWidth: "22rem" }} mb={"2rem"}>
         <FormControl fullWidth >
           <InputLabel size="small" id="select-filter-label">Users</InputLabel>
           <Select
@@ -354,7 +578,8 @@ const EValuationComponent: React.FC = () => {
             id="simple-select-filter"
             size="small"
             label="All Users"
-            value={selectedUserIdFilter} // Sử dụng selectedRoleId
+            value={selectedUserIdFilter}
+            IconComponent={ExpandMoreIcon}
             onChange={(event) => setSelectedUserIdFilter(event.target.value)}
           >
             <MenuItem value="">All Users</MenuItem>
@@ -366,60 +591,82 @@ const EValuationComponent: React.FC = () => {
           </Select>
         </FormControl>
       </Box>
+      {branches.length === 0 ? (
+        <Grid container spacing={2}>
+          {[...Array(3)].map((_, rowIndex) => (
+            <Grid container item spacing={2} key={rowIndex}>
+              {[...Array(3)].map((_, colIndex) => (
+                <Grid item xs={4} key={colIndex}>
+                  <Skeleton width={"100%"} height={50}/>
+                </Grid>
+              ))}
+            </Grid>
+          ))}
+        </Grid>
+      ) : (
+        <DataTable
+          columns={columns}
+          rows={filteredEValuations}
+          initialPagination={{
+            page: currentPage,
+            pageSize: tablePerPage,
+          }}
+          pageSizeOptions={pageSizeOptions}
+          checkboxSelection={true}
+          disableRowSelectionOnClick={true}
+          selectedRows={selectedRows}
+          onRowSelectionModelChange={handleRowSelectionChange}
+          onDeleteRow={handleDeleteSelectedRows}
+        />
+      )}
       <TableContainer className="has-action-fixed">
         <Table className="min-w-[1000px]">
           <TableHead>
             <TableRow>
               <TableCell>
-                {eValuations.length > 0 ? "Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? (
+                  <Checkbox
+                    indeterminate={
+                      Object.values(selectedEValuations).some((selected) => selected) &&
+                      Object.values(selectedEValuations).some((selected) => !selected)
+                    }
+                    checked={Object.values(selectedEValuations).every((selected) => selected)}
+                    onChange={handleSelectAll}
+                  />
+                ) : (
+                  <Skeleton  height={60} animation="wave" />
+                )
+                }
               </TableCell>
               <TableCell>
-                {eValuations.length > 0 ? "User Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "User Id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Category Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Category Id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {eValuations.length > 0 ? "Status" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Status" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {eValuations.length > 0 ? "Name" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Name" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Price" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Price" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell>
-                {eValuations.length > 0 ? "Image" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {eValuations.length > 0 ? "Type" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {eValuations.length > 0 ? "Metal" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell>
-                {eValuations.length > 0 ? "Size" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Image" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Weight" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Date" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Other Remarks" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Appointment Date" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Content" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Date" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Appointment Date" : <Skeleton variant="rectangular" height={40} animation="wave" />}
-              </TableCell>
-              <TableCell sx={{ maxWidth: "30rem" }}>
-                {eValuations.length > 0 ? "Branch Id" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Branch Id" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
               <TableCell align="right">
-                {eValuations.length > 0 ? "Action" : <Skeleton variant="rectangular" height={40} animation="wave" />}
+                {eValuations.length > 0 ? "Action" : <Skeleton  height={60} animation="wave" />}
               </TableCell>
             </TableRow>
           </TableHead>
@@ -427,7 +674,12 @@ const EValuationComponent: React.FC = () => {
             {filteredEValuations.length > 0 ? (
               filteredEValuations.map((eValuation) => (
                 <TableRow key={eValuation.id}>
-                  <TableCell>{eValuation.id}</TableCell>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedEValuations[eValuation.id] || false}
+                      onChange={() => handleCheckboxChange(eValuation.id)}
+                    />
+                  </TableCell>
                   <TableCell>
                     {eValuation.user_id && (
                       <UserName userId={eValuation.user_id} />
@@ -439,17 +691,15 @@ const EValuationComponent: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    {EVStatusOptions.find(option => option.value == eValuation.status)?.label || "Unknown"}
+                    <span className={`status-cell ${EVStatusOptions.find(option => option.value == eValuation.status)?.class || "unknown"}`}>
+                      {EVStatusOptions.find(option => option.value == eValuation.status)?.label || "Unknown"}
+                    </span>
                   </TableCell>
-                  <TableCell>{eValuation.name}</TableCell>
+                  <TableCell>
+                    <strong>{eValuation.name}</strong>
+                  </TableCell>
                   <TableCell>{eValuation.price}</TableCell>
                   <TableCell>{renderImageUrl(eValuation.image)}</TableCell>
-                  <TableCell>{eValuation.type}</TableCell>
-                  <TableCell>{eValuation.metal}</TableCell>
-                  <TableCell>{eValuation.size}</TableCell>
-                  <TableCell>{eValuation.weight}</TableCell>
-                  <TableCell>{eValuation.other_remarks}</TableCell>
-                  <TableCell>{eValuation.content}</TableCell>
                   <TableCell>{eValuation.date ? new Date(eValuation.date).toLocaleString() : ""}</TableCell>
                   <TableCell>{eValuation.appointment_date ? new Date(eValuation.appointment_date).toLocaleString() : ""}</TableCell>
                   <TableCell>
@@ -457,15 +707,30 @@ const EValuationComponent: React.FC = () => {
                       <BranchName branchId={eValuation.branch_id} />
                     )}
                   </TableCell>
-                  <TableCell>
-                    <Stack direction="row" spacing={2} justifyContent={"end"}>
-                      <Button variant="contained" color="primary" onClick={() => openEditFormPopup(eValuation)}>
-                        Edit
-                      </Button>
-                      <Button variant="contained" color="secondary" onClick={() => openDeleteConfirmation(eValuation)}>
-                        Delete
-                      </Button>
-                    </Stack>
+                  <TableCell className="!text-right">
+                    <IconButton color="primary" onClick={(e) => handleOpenPopover(eValuation.id, e)}>
+                      <MoreVertIcon />
+                    </IconButton>
+                    <Popover
+                      open={popoverInfo[eValuation.id]?.open || false}
+                      anchorEl={popoverInfo[eValuation.id]?.anchorEl}
+                      onClose={() => handleClosePopover(eValuation.id)}
+                    >
+                      <List>
+                        <ListItemButton onClick={() => openEditFormPopup(eValuation)}>
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <ModeEditSharpIcon color="primary"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Edit" />
+                        </ListItemButton>
+                        <ListItemButton onClick={() => openDeleteConfirmation(eValuation)} >
+                          <ListItemIcon sx={{ minWidth: "3.5rem" }}>
+                            <DeleteRoundedIcon color="error"/>
+                          </ListItemIcon>
+                          <ListItemText primary="Delete" className="text-[red]"/>
+                        </ListItemButton>
+                      </List>
+                    </Popover>
                   </TableCell>
                 </TableRow>
               ))
@@ -473,7 +738,7 @@ const EValuationComponent: React.FC = () => {
               <TableRow>
                 <TableCell colSpan={17}>
                   {eValuations.length === 0 ? (
-                    <Skeleton variant="rectangular" height={50} animation="wave" />
+                    <Skeleton  height={60} animation="wave" />
                   ) : (
                     <p className="text-[1.6rem] text-center">No eValuations found.</p>
                   )}
@@ -483,6 +748,13 @@ const EValuationComponent: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {Object.values(selectedEValuations).some((selected) => selected) && (
+        <div className="mt-6">
+          <Button variant="outlined" startIcon={<DeleteRoundedIcon />} color="primary" onClick={handleDeleteSelectedEValuations} disabled={selectedEValuationsCount === 0}>
+            Delete Selected ({selectedEValuationsCount})
+          </Button>
+        </div>
+      )}
       <Box mt={2} display="flex" justifyContent="center">
         <Pagination
           count={totalPages}
@@ -495,7 +767,7 @@ const EValuationComponent: React.FC = () => {
       </Box>
       <Dialog open={open} onClose={closeFormPopup} PaperProps={{ sx: { width: "100%", maxWidth: "100rem" } }}>
         <DialogTitle className="!pt-10">{selectedEValuation ? "Edit Role" : "Create New EValuation"}</DialogTitle>
-        <DialogContent className="flex w-full flex-col gap-y-6 !pt-6">
+        <DialogContent className="flex w-full flex-col gap-y-12  !pt-6">
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
             <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
               <InputLabel size="small" id="select-user">User</InputLabel>
@@ -506,6 +778,7 @@ const EValuationComponent: React.FC = () => {
                 name="user_id"
                 value={newEValuation.user_id}
                 onChange={handleInputChange}
+                IconComponent={ExpandMoreIcon}
                 variant="outlined"
                 error={!!newEValuation.errors?.user_id}
               >
@@ -525,6 +798,7 @@ const EValuationComponent: React.FC = () => {
                 size="small"
                 name="category_id"
                 value={newEValuation.category_id}
+                IconComponent={ExpandMoreIcon}
                 onChange={handleInputChange}
                 variant="outlined"
                 error={!!newEValuation.errors?.category_id}
@@ -547,6 +821,7 @@ const EValuationComponent: React.FC = () => {
                 value={newEValuation.status.toString()}
                 onChange={handleInputChange}
                 variant="outlined"
+                IconComponent={ExpandMoreIcon}
                 fullWidth
                 size="small"
                 error={!!newEValuation.errors?.status}
@@ -594,7 +869,7 @@ const EValuationComponent: React.FC = () => {
                 <div>
                   <p className="text-[1.2rem] text-gray-700 mb-2">Selected Image:</p>
                   <div className="image w-[8rem] h-[8rem] bg-slate-100 border-solid border-slate-300 border-[1px]">
-                    <img src={selectedImageUrl} className="w-full h-full object-cover" alt="Selected Media" />
+                    <Image src={selectedImageUrl} classNames="w-full h-full object-cover" alt="Selected Media" />
                   </div>
                 </div>
               )}
@@ -660,20 +935,45 @@ const EValuationComponent: React.FC = () => {
               error={!!newEValuation.errors?.other_remarks}
               helperText={newEValuation.errors?.other_remarks}
             />
-            <TextField
-              name="content"
-              label="Content"
-              value={newEValuation.content}
-              onChange={handleInputChange}
-              variant="outlined"
-              size="small"
-              fullWidth
-              error={!!newEValuation.errors?.content}
-              helperText={newEValuation.errors?.content}
+            <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
+              <InputLabel size="small" id="select-branch">Branch</InputLabel>
+              <Select
+                labelId="select-branch"
+                id="branch-select"
+                size="small"
+                name="branch_id"
+                value={newEValuation.branch_id}
+                IconComponent={ExpandMoreIcon}
+                onChange={handleInputChange}
+                variant="outlined"
+                error={!!newEValuation.errors?.branch_id}
+              >
+                {branches.map((branch:any) => (
+                  <MenuItem key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {newEValuation.errors?.branch_id && <FormHelperText error>{newEValuation.errors.branch_id}</FormHelperText>}
+            </FormControl>
+          </div>
+          <div>
+            <span className="!mb-3 block !font-medium !text-[1.3rem]"> Content:
+            </span>
+            <RichTextEditor
+              value={newEValuation.content || ""} // Pass the current content value
+              onChange={(content: string) => {
+                console.log(content);
+                // Update the newEValuation state with the new content
+                setNewEValuation((prevNewEValuation) => ({
+                  ...prevNewEValuation,
+                  content: content,
+                }));
+              }}
             />
           </div>
           <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
-            <div>
+            <div className="relative">
               <DateTime
                 label="Date"
                 value={newEValuation.date}
@@ -688,10 +988,10 @@ const EValuationComponent: React.FC = () => {
                 }}
               />
               {newEValuation.errors?.date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
-            <div>
+            <div className="relative">
               <DateTime
                 label="Appointment Date"
                 value={newEValuation.appointment_date}
@@ -706,31 +1006,9 @@ const EValuationComponent: React.FC = () => {
                 }}
               />
               {newEValuation.errors?.appointment_date && (
-                <p className="text-[red] px-[15px] text-[1.05rem] mt-[.5rem]">This field is required</p>
+                <p className="el-error">This field is required</p>
               )}
             </div>
-          </div>
-          <div className="grid md:grid-cols-2 gap-x-[1.5rem] gap-y-[3rem] items-end">
-            <FormControl fullWidth sx={{ ".MuiFormLabel-root": { background: "#fff", padding: "0 3px" } }}>
-              <InputLabel size="small" id="select-branch">Branch</InputLabel>
-              <Select
-                labelId="select-branch"
-                id="branch-select"
-                size="small"
-                name="branch_id"
-                value={newEValuation.branch_id}
-                onChange={handleInputChange}
-                variant="outlined"
-                error={!!newEValuation.errors?.branch_id}
-              >
-                {branches.map((branch:any) => (
-                  <MenuItem key={branch.id} value={branch.id}>
-                    {branch.name}
-                  </MenuItem>
-                ))}
-              </Select>
-              {newEValuation.errors?.branch_id && <FormHelperText error>{newEValuation.errors.branch_id}</FormHelperText>}
-            </FormControl>
           </div>
         </DialogContent>
         <DialogActions className="!p-10">
@@ -756,10 +1034,8 @@ const EValuationComponent: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <ToastContainer />
     </div>
   );
 };
 
 export default EValuationComponent;
-

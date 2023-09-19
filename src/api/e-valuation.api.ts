@@ -1,10 +1,15 @@
 import http from "@/utils/http";
-import { EValuation } from "./types";
+import { type AxiosResponse } from "axios";
+import { EValuation, EValuationsResponse } from "./types";
 
-export async function fetchEValuations(): Promise<EValuation[]> {
-  const response = await http.get("e-valuations");
-  return response.data.data;
+export async function fetchEValuations(page: number): Promise<EValuationsResponse> {
+  const response: AxiosResponse<EValuationsResponse> = await http.get(`e-valuations?page=${page}`);
+  const data = response.data.data;
+  const meta = response.data.meta;
+
+  return { data, meta };
 }
+
 
 export async function createEValuation(eValuation: EValuation): Promise<void> {
   await http.post("e-valuations", eValuation );
